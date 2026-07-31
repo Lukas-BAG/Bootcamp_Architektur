@@ -1,0 +1,70 @@
+/* ══════════════════════════════════════════════════════════════
+   Colorpalett — Bootcamp Softwarearchitektur & Projektplanung
+   Thema: "Bauplan" — technische Zeichnung, ruhiges Blaugrau, ein
+   klarer Signalakzent (Indigo) für interaktive Elemente.
+   Diese Datei ist die EINZIGE Stelle, an der Farben/Radien/Fonts
+   definiert werden. styles.css und alle Lehrkurs-Seiten lesen nur
+   aus diesen Variablen — ändere hier, nicht dort.
+   ══════════════════════════════════════════════════════════════ */
+
+:root {
+  /* Grundflächen */
+  --bg:            #f3f4f7;
+  --surface:       #ffffff;
+  --surface-2:     #eef0f4;
+
+  /* Text */
+  --ink:           #1c2230;
+  --ink-soft:      #3c4457;
+  --ink-mute:      #6b7386;
+
+  /* Linien */
+  --hair:          #dfe2ea;
+  --hair-strong:   #c3c8d6;
+
+  /* Akzent (Indigo — Bauplan-Signalfarbe) */
+  --accent:        #4453c4;
+  --accent-deep:   #2f3a94;
+  --accent-tint:   #e4e6fb;
+
+  /* Zweitakzent für Warnungen/Alt-Zustand in Vorher/Nachher-Vergleichen */
+  --warn:          #c4544a;
+  --warn-tint:     #f8e6e4;
+  --good:          #2f8f5b;
+  --good-tint:     #e2f3ea;
+
+  /* Effekte */
+  --radius:        6px;
+  --shadow:        0 1px 2px rgba(28,34,48,.06), 0 6px 20px rgba(28,34,48,.05);
+
+  /* Typografie */
+  --display:       'Iowan Old Style', 'Georgia', 'Source Serif 4', serif;
+  --mono:          'JetBrains Mono', 'Fira Code', ui-monospace, 'SF Mono', Consolas, monospace;
+  --sans:          -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg:          #14171f;
+    --surface:     #1b1f2a;
+    --surface-2:   #232837;
+
+    --ink:         #eef0f6;
+    --ink-soft:    #c3c8d9;
+    --ink-mute:    #8a91a8;
+
+    --hair:        #2b3040;
+    --hair-strong: #3a4055;
+
+    --accent:      #8b97f0;
+    --accent-deep: #aab3f5;
+    --accent-tint: #262b47;
+
+    --warn:        #e0928a;
+    --warn-tint:   #3a2626;
+    --good:        #7fc79c;
+    --good-tint:   #1f3328;
+
+    --shadow:      0 1px 2px rgba(0,0,0,.35), 0 6px 20px rgba(0,0,0,.3);
+  }
+}

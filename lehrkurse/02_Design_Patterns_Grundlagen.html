@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Design Patterns Grundlagen — Modul 02 · Bootcamp Architektur</title>
+<link rel="stylesheet" href="../css/styles.css">
+<style>
+  /* Modul-spezifische Ergänzungen — nutzen nur Farben aus styles.css/colorpalett.css */
+  .gof-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 14px; margin: 18px 0; }
+  @media (max-width: 720px) { .gof-grid { grid-template-columns: 1fr; } }
+  .gof-card { border: 1px solid var(--hair); border-radius: var(--radius); background: var(--surface); box-shadow: var(--shadow); padding: 14px 16px; }
+  .gof-card__tag { font-family: var(--mono); font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase; color: var(--accent); font-weight: 700; }
+  .gof-card__title { font-weight: 700; margin: 4px 0 8px; }
+  .gof-card ul { margin: 0; padding-left: 18px; font-size: 13.5px; color: var(--ink-soft); }
+  .gof-card li { margin-bottom: 2px; }
+
+  .strategy-btn { font-family: var(--mono); font-size: 12px; border: 1px solid var(--hair-strong); background: var(--surface-2); color: var(--ink-soft); border-radius: var(--radius); padding: 8px 14px; cursor: pointer; }
+  .strategy-btn:hover { background: var(--surface); }
+  .strategy-btn.is-active { background: var(--accent); color: #fff; border-color: var(--accent); font-weight: 700; }
+
+  .pattern-map { max-width: none; }
+  .pattern-map th, .pattern-map td { text-align: left; padding: 6px 10px; font-size: 13.5px; border-bottom: 1px solid var(--hair); }
+  .pattern-map th { font-family: var(--mono); font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-mute); }
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <aside class="rail">
+    <div class="brand">
+      <span class="brand__mark">Bootcamp · Architektur</span>
+      <span class="brand__name">Softwarearchitektur & Projektplanung</span>
+      <span class="brand__sub">Vom ersten Anforderungssatz bis zum fertigen Entwurf</span>
+    </div>
+    <div class="note-strip">
+      Lies der Reihe nach. <b>Spiel mit den Grafiken</b> und rechne die Übungen mit — das bleibt hängen, nicht das bloße Lesen.
+    </div>
+    <nav class="nav">
+      <div class="nav__group">Module</div>
+      <a class="nav__task" href="00_Vom_Problem_zum_Plan.html"><span class="nav__num">00</span><span class="nav__label">Vom Problem zum Plan</span></a>
+      <a class="nav__task" href="01_SOLID_Prinzipien.html"><span class="nav__num">01</span><span class="nav__label">SOLID-Prinzipien</span></a>
+      <a class="nav__task is-active" href="02_Design_Patterns_Grundlagen.html"><span class="nav__num">02</span><span class="nav__label">Design Patterns</span></a>
+      <a class="nav__task" href="03_Architekturstile.html"><span class="nav__num">03</span><span class="nav__label">Architekturstile</span></a>
+      <a class="nav__task" href="04_Modularitaet_Kopplung_Kohaesion.html"><span class="nav__num">04</span><span class="nav__label">Modularität & Kopplung</span></a>
+      <a class="nav__task" href="05_Fallstudie_Kleines_System.html"><span class="nav__num">05</span><span class="nav__label">Fallstudie: Kleines System</span></a>
+    </nav>
+    <div class="rail__foot">
+      <a class="nav__task" href="index.html"><span class="nav__num">←</span><span class="nav__label">Zur Übersicht</span></a>
+      <a class="nav__task" href="../Lernpfad.md"><span class="nav__num">📅</span><span class="nav__label">Lernpfad</span></a>
+      <a class="nav__task" href="../code/02-patterns"><span class="nav__num">💻</span><span class="nav__label">Übung: 02-patterns</span></a>
+    </div>
+  </aside>
+
+  <main class="main">
+    <header class="masthead">
+      <div class="masthead__rule"><span><span class="dot"></span>Modul 02 · Bausteine</span><span>~40 Min Lesezeit</span></div>
+      <div class="kicker">Design Patterns</div>
+      <h1>Design Patterns <em>Grundlagen</em></h1>
+      <p class="lede">SOLID sagt dir, <i>wie</i> guter Code aussieht. Design Patterns sind fertige, bewährte Antworten auf wiederkehrende Entwurfsprobleme — benannte Lösungsschemata, die du nicht neu erfinden musst. Dieses Modul zeigt dir fünf Klassiker im Detail und eine Warnung vor dem sechsten.</p>
+    </header>
+
+    <!-- ══════════ KAPITEL 0 ══════════ -->
+    <section class="chapter" id="k0">
+      <span class="chapter__tag">Kapitel 0 · Einstieg</span>
+      <h2>Was ist ein Design Pattern eigentlich?</h2>
+      <p>Ein <span class="keyword">Design Pattern</span> ist ein benanntes, wiederverwendbares Lösungsschema für ein wiederkehrendes Entwurfsproblem — keine fertige Codezeile zum Kopieren, sondern eine Struktur, die du an dein konkretes Problem anpasst. Der Name allein ist schon wertvoll: Sagst du „das ist ein Observer“, verstehen andere Entwickler sofort die Struktur dahinter, ohne dass du sie erklären musst.</p>
+
+      <div class="callout callout--warn">
+        <div class="callout__icon">🚩</div>
+        <div class="callout__body">Ein Pattern ist <b>kein Freifahrtschein</b>, es überall einzubauen. Ein Pattern, das kein echtes Problem löst, ist nur zusätzliche Komplexität mit einem hübschen Namen. Die Frage ist nie „Wo kann ich hier ein Pattern anwenden?“, sondern „Welches Problem habe ich gerade — und löst dieses Pattern es besser als der einfache Weg?“</div>
+      </div>
+
+      <p>Die „Gang of Four“ (GoF), ein 1994 erschienenes Standardwerk, teilt Patterns in drei Kategorien ein — das reicht hier als Orientierung, ohne es zu vertiefen:</p>
+
+      <div class="gof-grid">
+        <div class="gof-card">
+          <span class="gof-card__tag">Erzeugend · Creational</span>
+          <p class="gof-card__title">Wie Objekte entstehen</p>
+          <ul><li>Factory Method</li><li>Singleton (mit Vorsicht!)</li></ul>
+        </div>
+        <div class="gof-card">
+          <span class="gof-card__tag">Strukturell · Structural</span>
+          <p class="gof-card__title">Wie Objekte zusammengesetzt werden</p>
+          <ul><li>Adapter</li><li>Decorator</li></ul>
+        </div>
+        <div class="gof-card">
+          <span class="gof-card__tag">Verhaltensbezogen · Behavioral</span>
+          <p class="gof-card__title">Wie Objekte zusammenarbeiten</p>
+          <ul><li>Strategy</li><li>Observer</li></ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════ KAPITEL 1 ══════════ -->
+    <section class="chapter" id="k1">
+      <span class="chapter__tag">Kapitel 1 · Strategy</span>
+      <h2>Strategy — austauschbares Verhalten statt if/else-Kaskaden</h2>
+      <p>Erinnerst du dich an das Rabattbeispiel aus <a href="01_SOLID_Prinzipien.html">Modul 01, Kapitel „Open/Closed“</a>? Dort berechnete eine Methode den Rabatt per if/else-Kette über den Kundentyp — jeder neue Kundentyp bedeutete, diese Methode anzufassen und zu riskieren, dass bereits funktionierender Code kaputtgeht. Genau dieses Problem löst <span class="keyword">Strategy</span>.</p>
+      <p>Die Idee: Jede Regel wird eine eigene, kleine Klasse, die eine gemeinsame Schnittstelle implementiert (hier <code class="inline">RabattStrategy</code> mit der Methode <code class="inline">rabattBetrag(betrag)</code>). Der <span class="keyword">Warenkorb</span> — der „Kontext“ — kennt nur diese Schnittstelle und hält eine Referenz auf die aktuell gewählte Strategie. Neue Rabattarten kommen als neue Klasse hinzu, ohne den Warenkorb zu ändern.</p>
+
+      <div class="viz">
+        <div class="viz__title">Live: derselbe Warenkorb, unterschiedliche Strategie</div>
+        <canvas id="strategyChart" height="220"></canvas>
+        <div class="viz__ctrl">
+          <button type="button" class="strategy-btn is-active" data-strategy="standard">StandardRabatt (0%)</button>
+          <button type="button" class="strategy-btn" data-strategy="stamm">StammkundenRabatt (5%)</button>
+          <button type="button" class="strategy-btn" data-strategy="premium">PremiumRabatt (15%)</button>
+        </div>
+        <p class="viz__cap">Der Bestellwert bleibt bei 200 € gleich — nur die Strategie wechselt, die in den Warenkorb „eingesteckt“ ist. Der Warenkorb selbst enthält dafür keine einzige if/else-Zeile.</p>
+      </div>
+
+      <div class="callout callout--think">
+        <div class="callout__icon">💡</div>
+        <div class="callout__body"><b>Aha:</b> Strategy ist im Kern nichts anderes als „eine Funktion als Objekt verpacken, damit man sie austauschen kann“. In Sprachen mit echten Funktionsreferenzen (Lambdas) wirkt das Pattern manchmal wie unnötiges Zeremoniell — das Grundprinzip (austauschbares Verhalten hinter einer Schnittstelle) bleibt aber dasselbe.</div>
+      </div>
+
+      <div class="quiz" data-quiz-type="sc">
+        <p class="quiz__question">Ein Zahlungsdienst unterstützt Kreditkarte und PayPal. Die Auswahl passiert über eine lange if/else-Kette in der Bestell-Klasse. Welche Änderung entspricht am ehesten der Anwendung des Strategy Patterns?</p>
+        <ul class="quiz__options">
+          <li class="quiz__option" data-correct>Eine gemeinsame Schnittstelle ZahlungsMethode einführen, mit einer Klasse pro Zahlungsart, und die Bestell-Klasse hält nur eine Referenz auf sie.</li>
+          <li class="quiz__option">Alle Zahlungsarten weiterhin in einer einzigen, noch größeren Methode mit mehr else-if-Zweigen zusammenfassen, damit alles an einer Stelle steht.</li>
+          <li class="quiz__option">Eine Oberklasse Zahlung einführen, von der KreditkartenZahlung und PayPalZahlung erben, und per instanceof unterscheiden, welche Unterklasse vorliegt.</li>
+        </ul>
+        <button class="quiz__check">Prüfen</button>
+        <button class="quiz__reset" type="button">Zurücksetzen</button>
+        <div class="quiz__feedback"></div>
+      </div>
+    </section>
+
+    <!-- ══════════ KAPITEL 2 ══════════ -->
+    <section class="chapter" id="k2">
+      <span class="chapter__tag">Kapitel 2 · Factory Method</span>
+      <h2>Factory Method — Objekterzeugung entkoppeln</h2>
+      <p><span class="keyword">Factory Method</span> entkoppelt die Erzeugung eines Objekts von seiner konkreten Klasse. Statt überall im Code <code class="inline">new PdfDokument()</code> oder <code class="inline">new WordDokument()</code> zu schreiben (und bei jeder neuen Dokumentart jede dieser Stellen zu ändern), fragt der aufrufende Code eine <code class="inline">DokumentFactory</code> nach einem <code class="inline">Dokument</code> und bekommt eines zurück — ohne zu wissen, welche konkrete Klasse dahintersteckt.</p>
+
+      <div class="eq">Dokument doc = DokumentFactory.erstelleDokument("pdf");<br>doc.oeffnen(); // der Aufrufer kennt nur die Schnittstelle Dokument</div>
+
+      <p>Der Vorteil zeigt sich, sobald ein dritter Dokumenttyp dazukommt (z. B. <code class="inline">MarkdownDokument</code>): Nur die Factory wird erweitert, jeder Aufrufer bleibt unverändert.</p>
+
+      <div class="quiz" data-quiz-type="mc">
+        <p class="quiz__question">Welche Aussagen über Factory Method treffen zu? <span class="quiz__hint">(mehrere richtig)</span></p>
+        <ul class="quiz__options">
+          <li class="quiz__option" data-correct>Der aufrufende Code hängt nur von einer gemeinsamen Schnittstelle ab, nicht von den konkreten Klassen dahinter.</li>
+          <li class="quiz__option" data-correct>Neue Produktarten lassen sich hinzufügen, indem nur die Factory erweitert wird — der Aufrufer bleibt unverändert.</li>
+          <li class="quiz__option">Factory Method funktioniert nur, wenn alle erzeugten Objekte am Ende exakt dieselbe konkrete Klasse haben.</li>
+          <li class="quiz__option">Der Aufrufer muss weiterhin selbst entscheiden, welcher konkrete Konstruktor (PdfDokument oder WordDokument) aufgerufen wird.</li>
+        </ul>
+        <button class="quiz__check">Prüfen</button>
+        <button class="quiz__reset" type="button">Zurücksetzen</button>
+        <div class="quiz__feedback"></div>
+      </div>
+    </section>
+
+    <!-- ══════════ KAPITEL 3 ══════════ -->
+    <section class="chapter" id="k3">
+      <span class="chapter__tag">Kapitel 3 · Observer</span>
+      <h2>Observer — ein Ereignis, viele Abonnenten</h2>
+      <p><span class="keyword">Observer</span> verteilt Ereignisse an mehrere Abonnenten, ohne dass der Sender (das „Subjekt“) jeden Abonnenten im Detail kennt. Reales Beispiel: Ein Warenkorb ändert sich (ein Artikel wird hinzugefügt) — mehrere unabhängige UI-Teile müssen reagieren: die Preisanzeige, die Bestellübersicht, vielleicht eine Versandkostenberechnung. Ohne Observer müsste der Warenkorb jeden dieser Teile einzeln kennen und direkt aufrufen. Mit Observer registrieren sich alle Beobachter über eine gemeinsame Schnittstelle, und der Warenkorb ruft beim Ereignis einfach <code class="inline">aktualisieren(...)</code> auf jedem auf.</p>
+
+      <div class="viz">
+        <div class="viz__title">Live: ein Ereignis, mehrere Beobachter</div>
+        <canvas id="observerChart" height="240"></canvas>
+        <div class="viz__ctrl">
+          <button type="button" id="triggerEvent">Ereignis auslösen: Warenkorb geändert</button>
+          <span>Status:&nbsp;<span class="viz__read" id="observerStatus">Bereit</span></span>
+        </div>
+        <p class="viz__cap">Der Warenkorb (Subjekt, Indigo) kennt seine Beobachter nur über eine gemeinsame Schnittstelle. Grün + Häkchen zeigt an: dieser Beobachter wurde benachrichtigt — er weiß nicht, was die anderen mit der Nachricht tun.</p>
+      </div>
+
+      <div class="quiz" data-quiz-type="mc">
+        <p class="quiz__question">In welchen Szenarien passt Observer gut? <span class="quiz__hint">(mehrere richtig)</span></p>
+        <ul class="quiz__options">
+          <li class="quiz__option" data-correct>Ein Sensor-Wert ändert sich, und mehrere unabhängige Dashboard-Widgets müssen live aktualisiert werden.</li>
+          <li class="quiz__option" data-correct>Ein Nutzer ändert sein Profilbild, Header und Kommentarliste zeigen das neue Bild, ohne sich zu kennen.</li>
+          <li class="quiz__option">Ein Taschenrechner soll je nach ausgewählter Eingabe entweder addieren, subtrahieren oder multiplizieren.</li>
+          <li class="quiz__option">Eine Datei soll je nach Bedarf wahlweise als PDF-Dokument oder als Word-Dokument geöffnet werden.</li>
+        </ul>
+        <button class="quiz__check">Prüfen</button>
+        <button class="quiz__reset" type="button">Zurücksetzen</button>
+        <div class="quiz__feedback"></div>
+      </div>
+    </section>
+
+    <!-- ══════════ KAPITEL 4 ══════════ -->
+    <section class="chapter" id="k4">
+      <span class="chapter__tag">Kapitel 4 · Adapter</span>
+      <h2>Adapter — inkompatible Schnittstellen zusammenbringen</h2>
+      <p><span class="keyword">Adapter</span> macht zwei Schnittstellen kompatibel, ohne bestehenden Code zu ändern. Beispiel: Eine Alt-Bibliothek liefert Temperaturen über <code class="inline">getTemperaturFahrenheit()</code>, dein System erwartet aber überall <code class="inline">getTemperaturCelsius()</code>. Die Alt-Bibliothek darfst du nicht anfassen (fremder Code, externe .jar). Ein <code class="inline">TemperaturAdapter</code> implementiert die erwartete Schnittstelle und übersetzt intern den Aufruf an die Alt-Bibliothek.</p>
+
+      <div class="eq">TemperaturSensor sensor = new TemperaturAdapter(altesSystem);<br>sensor.getTemperaturCelsius(); // rechnet intern: (F - 32) * 5 / 9</div>
+
+      <p>Weder die Alt-Bibliothek noch der Code, der <code class="inline">TemperaturSensor</code> erwartet, müssen dafür geändert werden — nur die Adapter-Klasse dazwischen ist neu.</p>
+
+      <p class="cloze__text">Lückentext — ordne die Begriffe richtig zu:</p>
+      <div class="cloze">
+        <p class="cloze__text">Adapter gehört zur Kategorie der <input class="cloze__blank" data-answer="strukturellen|strukturell|structural" size="14"> Patterns. Die Klasse, die die inkompatible Alt-Schnittstelle bereitstellt (hier: das alte Temperatursystem), nennt man auch das <input class="cloze__blank" data-answer="Adaptee" size="10">. Strategy und Observer dagegen gehören zur Kategorie der <input class="cloze__blank" data-answer="verhaltensbezogenen|verhaltensbezogen|behavioral" size="18"> Patterns, weil sie beschreiben, wie Objekte zur Laufzeit zusammenarbeiten. Factory Method wiederum gehört zur Kategorie der <input class="cloze__blank" data-answer="erzeugenden|erzeugend|creational" size="14"> Patterns.</p>
+        <div class="cloze__actions">
+          <button class="cloze__check">Prüfen</button>
+          <button class="quiz__reset" type="button">Zurücksetzen</button>
+        </div>
+        <div class="quiz__feedback"></div>
+      </div>
+    </section>
+
+    <!-- ══════════ KAPITEL 5 ══════════ -->
+    <section class="chapter" id="k5">
+      <span class="chapter__tag">Kapitel 5 · Decorator</span>
+      <h2>Decorator — Verhalten dynamisch erweitern statt Vererbung</h2>
+      <p><span class="keyword">Decorator</span> erweitert Verhalten zur Laufzeit, indem es ein Objekt mit einer oder mehreren „Hüllen“ umgibt — statt für jede Kombination eine eigene Unterklasse zu bauen. Klassisches Beispiel: ein <code class="inline">Kaffee</code>-Objekt, das mit <code class="inline">MilchDecorator</code>, <code class="inline">ZuckerDecorator</code> usw. umhüllt wird.</p>
+
+      <div class="eq">Kaffee bestellung = new ZuckerDecorator(new MilchDecorator(new Espresso()));<br>bestellung.beschreibung(); // "Espresso, Milch, Zucker"<br>bestellung.preis();       // 2.00 + 0.50 + 0.20</div>
+
+      <p>Die Alternative — eine Unterklasse pro Kombination (<code class="inline">KaffeeMitMilch</code>, <code class="inline">KaffeeMitZucker</code>, <code class="inline">KaffeeMitMilchUndZucker</code>, …) — wächst mit jeder neuen Zutat explosionsartig. Mit Decorator bleibt es bei einer kleinen Klasse pro Zutat, beliebig kombinierbar.</p>
+
+      <p>Ordne jedes Pattern dem Problem zu, das es typischerweise löst:</p>
+      <div class="dragdrop">
+        <div class="dragdrop__layout">
+          <div class="dragdrop__pool">
+            <span class="dragdrop__col-label">Pattern</span>
+            <div class="dragdrop__item" data-match="strategy">Strategy</div>
+            <div class="dragdrop__item" data-match="factory">Factory Method</div>
+            <div class="dragdrop__item" data-match="observer">Observer</div>
+            <div class="dragdrop__item" data-match="adapter">Adapter</div>
+            <div class="dragdrop__item" data-match="decorator">Decorator</div>
+          </div>
+          <div class="dragdrop__targets">
+            <span class="dragdrop__col-label">Problem, das es löst</span>
+            <div class="dragdrop__target" data-target="strategy"><span class="dragdrop__target-label">Ich will zur Laufzeit zwischen mehreren Algorithmen wechseln können</span><div class="dragdrop__slot"></div></div>
+            <div class="dragdrop__target" data-target="factory"><span class="dragdrop__target-label">Ich will Objekterzeugung von der konkreten Klasse entkoppeln</span><div class="dragdrop__slot"></div></div>
+            <div class="dragdrop__target" data-target="observer"><span class="dragdrop__target-label">Mehrere Teile des Systems müssen über eine Änderung informiert werden</span><div class="dragdrop__slot"></div></div>
+            <div class="dragdrop__target" data-target="adapter"><span class="dragdrop__target-label">Zwei Schnittstellen passen nicht zueinander, ich darf den Altcode nicht ändern</span><div class="dragdrop__slot"></div></div>
+            <div class="dragdrop__target" data-target="decorator"><span class="dragdrop__target-label">Ich will Verhalten kombinierbar erweitern, ohne eine Klassenexplosion durch Vererbung</span><div class="dragdrop__slot"></div></div>
+          </div>
+          <div class="dragdrop__actions">
+            <button class="dragdrop__check">Prüfen</button>
+            <button class="quiz__reset" type="button">Zurücksetzen</button>
+            <div class="quiz__feedback"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════ KAPITEL 6 ══════════ -->
+    <section class="chapter" id="k6">
+      <span class="chapter__tag">Kapitel 6 · Singleton — Fallstricke</span>
+      <h2>Singleton: der Klassiker, der meistens ein Antipattern ist</h2>
+      <p>Ein <span class="keyword">Singleton</span> garantiert genau eine Instanz einer Klasse, global über eine statische <code class="inline">getInstance()</code>-Methode erreichbar. Das klingt praktisch — ist es aber in den meisten Fällen nicht. Dieses Kapitel ist bewusst eine <b>Warnung</b>, keine Empfehlung.</p>
+
+      <div class="callout callout--warn">
+        <div class="callout__icon">🚩</div>
+        <div class="callout__body">
+          <p><b>Warum Singleton oft schadet:</b></p>
+          <ul>
+            <li><b>Versteckter globaler Zustand:</b> Jede Klasse kann sich die Instanz einfach holen — Abhängigkeiten werden im Code unsichtbar, statt im Konstruktor sichtbar zu sein.</li>
+            <li><b>Schwer testbar:</b> Der globale Zustand überlebt zwischen Tests. Ein Test kann von dem beeinflusst werden, was ein anderer Test vorher am Singleton verändert hat — Testergebnisse hängen von der Ausführungsreihenfolge ab.</li>
+            <li><b>Verdeckte Abhängigkeiten:</b> Eine Methode, die intern <code class="inline">Konfiguration.getInstance()</code> aufruft, verrät das nicht in ihrer Signatur — man sieht es erst beim Lesen des Methodenkörpers.</li>
+          </ul>
+        </div>
+      </div>
+
+      <p><b>Alternativen:</b> <span class="keyword">Dependency Injection</span> (die benötigte Instanz wird dem Konstruktor übergeben, statt sie sich selbst zu holen) oder ein expliziter Konstruktoraufruf, bei dem der Aufrufer selbst genau eine Instanz erzeugt und verwaltet, statt sich auf einen globalen Zugriffspunkt zu verlassen. Beides macht Abhängigkeiten sichtbar und Tests unabhängig voneinander — genau das, was die <code class="inline">code/02-patterns/singleton</code>-Übung an einem konkreten Beispiel zeigt.</p>
+
+      <div class="quiz" data-quiz-type="sc">
+        <p class="quiz__question">Ein Team nutzt eine Klasse Logger mit statischer getInstance()-Methode als Singleton, die intern alle bisherigen Log-Einträge im Speicher sammelt. Ein Entwickler schreibt einen Unit-Test, der prüft, dass eine Methode genau einen Log-Eintrag erzeugt. Was ist das Hauptproblem dabei?</p>
+        <ul class="quiz__options">
+          <li class="quiz__option" data-correct>Der Test sieht eventuell Log-Einträge vorheriger Tests, weil alle denselben globalen Zustand teilen — das Ergebnis hängt von der Reihenfolge ab.</li>
+          <li class="quiz__option">Singletons lassen sich in Java grundsätzlich nicht mit dem Schlüsselwort static in derselben Klasse kombinieren — das verstößt gegen die Sprache.</li>
+          <li class="quiz__option">Der Test wird automatisch spürbar langsamer, weil jeder Aufruf von getInstance() im Hintergrund eine komplett neue Datenbankverbindung öffnet.</li>
+        </ul>
+        <button class="quiz__check">Prüfen</button>
+        <button class="quiz__reset" type="button">Zurücksetzen</button>
+        <div class="quiz__feedback"></div>
+      </div>
+    </section>
+
+    <!-- ══════════ KAPITEL 7 ══════════ -->
+    <section class="chapter" id="k7">
+      <span class="chapter__tag">Kapitel 7 · Selbstcheck</span>
+      <h2>Bist du fit für Modul 03?</h2>
+      <p>Klick die Karten um. Wenn du diese sechs sicher beantwortest, bist du bereit für die Architekturstile in Modul 03.</p>
+
+      <div class="cards">
+        <div class="card3d"><div class="card3d__inner">
+          <div class="card3d__face card3d__front"><span class="card3d__tag">Strategy</span><span class="card3d__q">Was ist der Kerngedanke von Strategy?</span><span class="card3d__hint">klick</span></div>
+          <div class="card3d__face card3d__back"><span class="card3d__tag">Antwort</span><span class="card3d__a">Verhalten in austauschbare Objekte hinter einer gemeinsamen Schnittstelle auslagern — der Kontext wählt zur Laufzeit, welches Objekt aktiv ist, statt if/else-Kaskaden.</span></div>
+        </div></div>
+        <div class="card3d"><div class="card3d__inner">
+          <div class="card3d__face card3d__front"><span class="card3d__tag">Factory Method</span><span class="card3d__q">Was entkoppelt Factory Method?</span><span class="card3d__hint">klick</span></div>
+          <div class="card3d__face card3d__back"><span class="card3d__tag">Antwort</span><span class="card3d__a">Die Erzeugung eines Objekts von seiner konkreten Klasse — der Aufrufer bekommt nur eine Schnittstelle zurück.</span></div>
+        </div></div>
+        <div class="card3d"><div class="card3d__inner">
+          <div class="card3d__face card3d__front"><span class="card3d__tag">Observer</span><span class="card3d__q">Wie verteilt Observer Ereignisse?</span><span class="card3d__hint">klick</span></div>
+          <div class="card3d__face card3d__back"><span class="card3d__tag">Antwort</span><span class="card3d__a">Ein Subjekt hält eine Liste von Beobachtern und ruft bei einer Änderung aktualisieren() auf jedem auf, ohne sie im Detail zu kennen.</span></div>
+        </div></div>
+        <div class="card3d"><div class="card3d__inner">
+          <div class="card3d__face card3d__front"><span class="card3d__tag">Adapter</span><span class="card3d__q">Wozu dient ein Adapter?</span><span class="card3d__hint">klick</span></div>
+          <div class="card3d__face card3d__back"><span class="card3d__tag">Antwort</span><span class="card3d__a">Er übersetzt zwischen zwei inkompatiblen Schnittstellen, ohne dass eine der beiden Seiten geändert werden muss.</span></div>
+        </div></div>
+        <div class="card3d"><div class="card3d__inner">
+          <div class="card3d__face card3d__front"><span class="card3d__tag">Decorator</span><span class="card3d__q">Was löst Decorator, was Vererbung nicht gut löst?</span><span class="card3d__hint">klick</span></div>
+          <div class="card3d__face card3d__back"><span class="card3d__tag">Antwort</span><span class="card3d__a">Kombinierbare Erweiterung von Verhalten zur Laufzeit, ohne für jede Kombination eine eigene Unterklasse zu brauchen.</span></div>
+        </div></div>
+        <div class="card3d"><div class="card3d__inner">
+          <div class="card3d__face card3d__front"><span class="card3d__tag">Singleton</span><span class="card3d__q">Warum gilt Singleton oft als Antipattern?</span><span class="card3d__hint">klick</span></div>
+          <div class="card3d__face card3d__back"><span class="card3d__tag">Antwort</span><span class="card3d__a">Er versteckt globalen, veränderlichen Zustand hinter einem harmlos wirkenden getInstance() — das macht Code schwer testbar und Abhängigkeiten unsichtbar.</span></div>
+        </div></div>
+      </div>
+
+      <details class="reveal">
+        <summary>Warum ist Strategy trotz ähnlicher Struktur kein Ersatz für Vererbung mit instanceof-Abfragen?</summary>
+        <div class="q"><p>Weil instanceof-Abfragen genau das Problem reproduzieren, das Strategy lösen soll: Der aufrufende Code muss weiterhin jeden konkreten Typ kennen und unterscheiden. Bei Strategy kennt der Kontext nur die gemeinsame Schnittstelle — neue Strategien kommen hinzu, ohne dass irgendwo im Code eine neue Verzweigung entsteht.</p></div>
+      </details>
+      <details class="reveal">
+        <summary>Ein Kollege will für jede Kaffee-Variante (Milch, Zucker, Milch+Zucker, ...) eine eigene Unterklasse anlegen. Was schlägst du stattdessen vor?</summary>
+        <div class="q"><p>Decorator: eine kleine Klasse pro Zutat (MilchDecorator, ZuckerDecorator), die ein Kaffee-Objekt umhüllt und dieselbe Schnittstelle behält. Kombinationen entstehen durch Verschachteln der Decorators zur Laufzeit, statt durch eine Unterklasse pro Kombination — das wächst linear statt exponentiell mit jeder neuen Zutat.</p></div>
+      </details>
+      <details class="reveal">
+        <summary>Ist Singleton damit grundsätzlich verboten?</summary>
+        <div class="q"><p>Nicht wörtlich verboten, aber die Standardannahme sollte umgekehrt sein: Zeig zuerst, warum eine explizit verwaltete, einzige Instanz oder Dependency Injection nicht reicht, bevor du zu einem globalen getInstance() greifst. In sehr kleinen Skripten ohne Tests mag ein Singleton harmlos sein — in jedem wachsenden, testgetriebenen System wird er fast immer zum Reibungspunkt.</p></div>
+      </details>
+
+      <div class="callout callout--note" style="margin-top:28px">
+        <div class="callout__icon">🚀</div>
+        <div class="callout__body"><b>Nächster Schritt:</b> Bearbeite die Übung in <code class="inline">code/02-patterns/</code> — fülle die TODOs in allen sechs Paketen (strategy, factorymethod, observer, adapter, decorator, singleton) und lass jeweils die Main-Klasse laufen, um dich selbst zu graden. Danach geht's weiter mit <a href="03_Architekturstile.html">Modul 03 · Architekturstile</a>.</div>
+      </div>
+    </section>
+
+    <footer class="foot">
+      <span>Modul 02 · Design Patterns Grundlagen</span>
+      <span><a href="01_SOLID_Prinzipien.html">← Modul 01</a> · <a href="index.html">Übersicht</a> · <a href="03_Architekturstile.html">Modul 03 →</a></span>
+    </footer>
+  </main>
+</div>
+
+<script src="../js/quiz.js"></script>
+<script>
+/* ── Modul-Visualisierungen ── */
+(function(){
+  "use strict";
+  var css = function(v){ return getComputedStyle(document.documentElement).getPropertyValue(v).trim() || "#4453c4"; };
+  function fit(cv){
+    var dpr = window.devicePixelRatio || 1;
+    var w = cv.clientWidth || 600, h = cv.clientHeight || 220;
+    if (cv.width !== w*dpr || cv.height !== h*dpr){ cv.width = w*dpr; cv.height = h*dpr; }
+    var ctx = cv.getContext("2d"); ctx.setTransform(dpr,0,0,dpr,0,0);
+    return { ctx: ctx, w: w, h: h };
+  }
+
+  /* ── 1) Strategy-Umschalter ── */
+  var stratCv = document.getElementById("strategyChart");
+  var stratBtns = Array.prototype.slice.call(document.querySelectorAll(".strategy-btn"));
+  var stratData = {
+    standard: { label: "StandardRabatt", prozent: 0,  endpreis: 200 },
+    stamm:    { label: "StammkundenRabatt", prozent: 5,  endpreis: 190 },
+    premium:  { label: "PremiumRabatt", prozent: 15, endpreis: 170 }
+  };
+  var aktivStrategie = "standard";
+
+  function drawStrategy(){
+    if (!stratCv) return;
+    var o = fit(stratCv), ctx=o.ctx, w=o.w, h=o.h, base=h-38, top=56, left=44, right=44;
+    ctx.clearRect(0,0,w,h);
+    var data = stratData[aktivStrategie];
+
+    ctx.font = "700 13px 'JetBrains Mono', monospace"; ctx.textAlign = "left";
+    ctx.fillStyle = css("--ink");
+    ctx.fillText("Aktive Strategie: " + data.label + " (-" + data.prozent + "%)", left, 26);
+
+    var n = 2, gap = 90, bw = (w-left-right-gap)/n, maxV = 220;
+    var values = [
+      { name: "Bestellwert", val: 200, color: css("--hair-strong") },
+      { name: "Endpreis", val: data.endpreis, color: css("--accent") }
+    ];
+    ctx.textAlign = "center"; ctx.font = "12px 'JetBrains Mono', monospace";
+    for (var i=0;i<n;i++){
+      var x = left + i*(bw+gap);
+      var bh = values[i].val/maxV*(base-top);
+      ctx.fillStyle = values[i].color;
+      ctx.fillRect(x, base-bh, bw, bh);
+      ctx.fillStyle = css("--ink");
+      ctx.fillText(values[i].val.toFixed(0) + " €", x+bw/2, base-bh-8);
+      ctx.fillStyle = css("--ink-mute");
+      ctx.fillText(values[i].name, x+bw/2, base+18);
+    }
+    ctx.strokeStyle = css("--hair-strong"); ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(left,base); ctx.lineTo(w-right,base); ctx.stroke();
+  }
+
+  stratBtns.forEach(function(btn){
+    btn.addEventListener("click", function(){
+      stratBtns.forEach(function(b){ b.classList.remove("is-active"); });
+      btn.classList.add("is-active");
+      aktivStrategie = btn.getAttribute("data-strategy");
+      drawStrategy();
+    });
+  });
+
+  /* ── 2) Observer Publish/Subscribe-Animation ── */
+  var obsCv = document.getElementById("observerChart");
+  var obsBtn = document.getElementById("triggerEvent");
+  var obsStatus = document.getElementById("observerStatus");
+  var observerNames = ["Preisanzeige", "Bestellübersicht", "Versandkostenrechner"];
+  var animStart = null, animDuration = 900, animating = false, animFrame = null;
+
+  function layout(w,h){
+    return {
+      subjectX: w*0.16, subjectY: h/2,
+      obsX: w*0.82,
+      obsYs: [h*0.22, h*0.5, h*0.78]
+    };
+  }
+
+  function drawObserverScene(progress){
+    if (!obsCv) return;
+    var o = fit(obsCv), ctx=o.ctx, w=o.w, h=o.h;
+    ctx.clearRect(0,0,w,h);
+    var L = layout(w,h);
+
+    ctx.strokeStyle = css("--hair-strong"); ctx.lineWidth = 1.5;
+    L.obsYs.forEach(function(oy){
+      ctx.beginPath(); ctx.moveTo(L.subjectX+36, L.subjectY); ctx.lineTo(L.obsX-72, oy); ctx.stroke();
+    });
+
+    ctx.fillStyle = css("--accent-tint");
+    ctx.fillRect(L.subjectX-36, L.subjectY-26, 72, 52);
+    ctx.strokeStyle = css("--accent"); ctx.lineWidth = 2;
+    ctx.strokeRect(L.subjectX-36, L.subjectY-26, 72, 52);
+    ctx.fillStyle = css("--accent-deep"); ctx.font = "700 11px 'JetBrains Mono', monospace"; ctx.textAlign = "center";
+    ctx.fillText("Warenkorb", L.subjectX, L.subjectY-2);
+    ctx.fillText("(Subjekt)", L.subjectX, L.subjectY+13);
+
+    var lit = progress !== null && progress >= 0.97;
+    observerNames.forEach(function(name, i){
+      var oy = L.obsYs[i];
+      ctx.fillStyle = lit ? css("--good-tint") : css("--surface-2");
+      ctx.fillRect(L.obsX-74, oy-23, 148, 46);
+      ctx.strokeStyle = lit ? css("--good") : css("--hair-strong"); ctx.lineWidth = 2;
+      ctx.strokeRect(L.obsX-74, oy-23, 148, 46);
+      ctx.fillStyle = lit ? css("--good") : css("--ink-soft");
+      ctx.font = "11px 'JetBrains Mono', monospace"; ctx.textAlign = "center";
+      ctx.fillText(name, L.obsX, oy-3);
+      ctx.fillStyle = css("--ink-mute"); ctx.font = "10px 'JetBrains Mono', monospace";
+      ctx.fillText(lit ? "✓ benachrichtigt" : "wartet …", L.obsX, oy+14);
+    });
+
+    if (progress !== null && progress < 1){
+      var t = Math.min(progress*1.35, 1);
+      L.obsYs.forEach(function(oy){
+        var x = (L.subjectX+36) + ((L.obsX-72) - (L.subjectX+36)) * t;
+        var y = L.subjectY + (oy - L.subjectY) * t;
+        ctx.beginPath(); ctx.arc(x,y,5,0,Math.PI*2); ctx.fillStyle = css("--accent"); ctx.fill();
+      });
+    }
+  }
+
+  function animateObserver(ts){
+    if (!animStart) animStart = ts;
+    var elapsed = ts - animStart;
+    var progress = Math.min(elapsed/animDuration, 1);
+    drawObserverScene(progress);
+    if (progress < 1){
+      animFrame = requestAnimationFrame(animateObserver);
+    } else {
+      if (obsStatus) obsStatus.textContent = "Alle Beobachter benachrichtigt";
+      setTimeout(function(){
+        animating = false; animStart = null;
+        if (obsStatus) obsStatus.textContent = "Bereit";
+        drawObserverScene(null);
+      }, 850);
+    }
+  }
+
+  if (obsBtn) obsBtn.addEventListener("click", function(){
+    if (animating) return;
+    animating = true; animStart = null;
+    if (obsStatus) obsStatus.textContent = "Ereignis unterwegs …";
+    animFrame = requestAnimationFrame(animateObserver);
+  });
+
+  function redrawAll(){
+    drawStrategy();
+    if (!animating) drawObserverScene(null);
+  }
+  window.addEventListener("resize", redrawAll);
+  window.addEventListener("load", redrawAll);
+  redrawAll();
+})();
+</script>
+</body>
+</html>

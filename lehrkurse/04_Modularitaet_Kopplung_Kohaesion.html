@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Modularität, Kopplung & Kohäsion — Modul 04 · Bootcamp Architektur</title>
+<link rel="stylesheet" href="../css/styles.css">
+<style>
+  /* Modul-spezifische Ergänzungen — nutzen nur Farben aus styles.css/colorpalett.css */
+  .code-block {
+    font-family: var(--mono); font-size: 13px; line-height: 1.6;
+    background: var(--surface-2); border: 1px solid var(--hair); border-radius: var(--radius);
+    padding: 14px 16px; margin: 14px 0; overflow-x: auto; white-space: pre;
+  }
+  .code-block .cm { color: var(--ink-mute); }
+  .code-block--bad { border-left: 3px solid var(--warn); }
+  .code-block--good { border-left: 3px solid var(--good); }
+  .split-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 16px 0; }
+  @media (max-width: 720px) { .split-cols { grid-template-columns: 1fr; } }
+  .split-cols__label { font-family: var(--mono); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; font-weight: 700; margin-bottom: 6px; display: block; }
+  .split-cols__label--bad { color: var(--warn); }
+  .split-cols__label--good { color: var(--good); }
+  .dep-compare { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 780px) { .dep-compare { grid-template-columns: 1fr; } }
+  .layer-example { border: 1px solid var(--hair); border-radius: var(--radius); background: var(--surface); box-shadow: var(--shadow); padding: 14px 16px; margin: 10px 0; }
+  .layer-example__title { font-family: var(--mono); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; font-weight: 700; margin-bottom: 8px; }
+  .layer-example__title--good { color: var(--good); }
+  .layer-example__title--bad { color: var(--warn); }
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <aside class="rail">
+    <div class="brand">
+      <span class="brand__mark">Bootcamp · Architektur</span>
+      <span class="brand__name">Softwarearchitektur & Projektplanung</span>
+      <span class="brand__sub">Vom ersten Anforderungssatz bis zum fertigen Entwurf</span>
+    </div>
+    <div class="note-strip">
+      Lies der Reihe nach. <b>Spiel mit den Grafiken</b> und rechne die Übungen mit — das bleibt hängen, nicht das bloße Lesen.
+    </div>
+    <nav class="nav">
+      <div class="nav__group">Module</div>
+      <a class="nav__task" href="00_Vom_Problem_zum_Plan.html"><span class="nav__num">00</span><span class="nav__label">Vom Problem zum Plan</span></a>
+      <a class="nav__task" href="01_SOLID_Prinzipien.html"><span class="nav__num">01</span><span class="nav__label">SOLID-Prinzipien</span></a>
+      <a class="nav__task" href="02_Design_Patterns_Grundlagen.html"><span class="nav__num">02</span><span class="nav__label">Design Patterns</span></a>
+      <a class="nav__task" href="03_Architekturstile.html"><span class="nav__num">03</span><span class="nav__label">Architekturstile</span></a>
+      <a class="nav__task is-active" href="04_Modularitaet_Kopplung_Kohaesion.html"><span class="nav__num">04</span><span class="nav__label">Modularität & Kopplung</span></a>
+      <a class="nav__task" href="05_Fallstudie_Kleines_System.html"><span class="nav__num">05</span><span class="nav__label">Fallstudie: Kleines System</span></a>
+    </nav>
+    <div class="rail__foot">
+      <a class="nav__task" href="index.html"><span class="nav__num">←</span><span class="nav__label">Zur Übersicht</span></a>
+      <a class="nav__task" href="../Lernpfad.md"><span class="nav__num">📅</span><span class="nav__label">Lernpfad</span></a>
+      <a class="nav__task" href="../code/04-modularitaet"><span class="nav__num">💻</span><span class="nav__label">Übung: 04-modularitaet</span></a>
+    </div>
+  </aside>
+
+  <main class="main">
+    <header class="masthead">
+      <div class="masthead__rule"><span><span class="dot"></span>Modul 04 · Struktur unterhalb der Architektur</span><span>~30 Min Lesezeit</span></div>
+      <div class="kicker">Modularität</div>
+      <h1>Modularität, Kopplung <em>& Kohäsion</em></h1>
+      <p class="lede">Modul 03 hat dir gezeigt, wie man ganze Systeme in Schichten oder Ports & Adapter gliedert. Dieses Modul zoomt eine Ebene tiefer: Wie schneidest du die <i>Module innerhalb</i> einer Architektur so, dass eine einzelne fachliche Änderung an einer Stelle bleibt — statt sich durch die halbe Codebasis zu fressen?</p>
+    </header>
+
+    <!-- ══════════ KAPITEL 0 ══════════ -->
+    <section class="chapter" id="k0">
+      <span class="chapter__tag">Kapitel 0 · Einordnung</span>
+      <h2>Warum reicht "die richtige Architektur" allein nicht?</h2>
+      <p class="lead-in">Du kannst in <a href="03_Architekturstile.html">Modul 03</a> die sauberste Schichtenarchitektur oder Hexagonal-Architecture aufgesetzt haben — und trotzdem nach ein paar Monaten ein unwartbares System haben. Wie geht das zusammen?</p>
+      <p>Eine Architektur legt die <b>groben</b> Bausteine und ihre Beziehungen fest: Web-Schicht, Domänen-Schicht, Persistenz-Schicht; oder Ports und Adapter. Aber <i>innerhalb</i> jeder dieser Schichten entstehen ständig neue Klassen und Module. Ob diese Module gut geschnitten sind — ob verwandte Dinge zusammenbleiben und unabhängige Dinge sich nicht gegenseitig im Weg stehen — entscheidet sich auf einer Ebene, die eine Architekturskizze gar nicht zeigt.</p>
+      <div class="callout callout--think">
+        <div class="callout__icon">💡</div>
+        <div class="callout__body"><b>Aha:</b> Architektur beantwortet "in welche groben Teile zerlegen wir das System?". Modularität beantwortet "wie schneiden wir jeden dieser Teile weiter, damit er selbst wartbar bleibt?". Eine gute Antwort auf die erste Frage schützt dich nicht vor einer schlechten Antwort auf die zweite.</div>
+      </div>
+    </section>
+
+    <!-- ══════════ KAPITEL 1 ══════════ -->
+    <section class="chapter" id="k1">
+      <span class="chapter__tag">Kapitel 1 · Kohäsion</span>
+      <h2>Hohe Kohäsion: was zusammengehört, soll auch zusammen liegen</h2>
+      <p class="lead-in"><span class="keyword">Kohäsion</span> beschreibt, wie stark die Dinge <i>innerhalb</i> eines Moduls fachlich zusammengehören. Hohe Kohäsion heißt: Wenn du dir die Klasse ansiehst, ergibt sie als Ganzes einen einzigen, klaren Sinn.</p>
+
+      <p>Ein sehr häufiges Symptom niedriger Kohäsion ist die "Utils"- oder "Helper"-Klasse: eine Sammelstelle für Methoden, die nichts miteinander zu tun haben, außer dass niemand wusste, wohin damit.</p>
+
+      <div class="split-cols">
+        <div>
+          <span class="split-cols__label split-cols__label--bad">Niedrige Kohäsion</span>
+          <div class="code-block code-block--bad"><span class="cm">// Utils: drei fachlich fremde Aufgaben in einer Klasse</span>
+public class Utils {
+    public static String formatDate(Date d) { <span class="cm">/* ... */</span> }
+    public static void sendEmail(String to, String body) { <span class="cm">/* ... */</span> }
+    public static double calculatePrice(Order o) { <span class="cm">/* ... */</span> }
+}</div>
+        </div>
+        <div>
+          <span class="split-cols__label split-cols__label--good">Hohe Kohäsion</span>
+          <div class="code-block code-block--good"><span class="cm">// Drei fokussierte Klassen statt einer Sammelklasse</span>
+public class DatumsFormatter {
+    public String format(Date d) { <span class="cm">/* ... */</span> }
+}
+
+public class Mailversand {
+    public void send(String to, String body) { <span class="cm">/* ... */</span> }
+}
+
+public class Preisrechner {
+    public double calculate(Order o) { <span class="cm">/* ... */</span> }
+}</div>
+        </div>
+      </div>
+
+      <p>Der Unterschied ist nicht Geschmack, sondern Konsequenz: Ändert sich die Mehrwertsteuer-Berechnung, muss in der rechten Variante nur <code class="inline">Preisrechner</code> angefasst werden. In der linken Variante liegt die Änderung in einer Klasse, die auch für E-Mail-Versand zuständig ist — jede Änderung an <code class="inline">Utils</code> zwingt dich, den ganzen unübersichtlichen Rest im Kopf mitzudenken, obwohl er gar nicht betroffen ist.</p>
+
+      <div class="callout callout--note">
+        <div class="callout__icon">⚠️</div>
+        <div class="callout__body">Kohäsion ist keine Frage der Klassengröße. Eine große Klasse mit zwanzig Methoden, die alle zur selben Fachlichkeit gehören (z. B. alles rund um eine Bestellung), kann hoch kohäsiv sein. Eine winzige Klasse mit zwei fachlich fremden Methoden ist trotzdem niedrig kohäsiv.</div>
+      </div>
+
+      <div class="quiz" data-quiz-type="sc">
+        <p class="quiz__question">Eine Klasse <code class="inline">Utils</code> enthält die Methoden <code class="inline">formatDate(Date d)</code>, <code class="inline">sendEmail(String to, String body)</code> und <code class="inline">calculatePrice(Order o)</code> — drei fachlich unabhängige Aufgaben in einer Klasse. Was zeigt dieses Beispiel?</p>
+        <ul class="quiz__options">
+          <li class="quiz__option" data-correct>Niedrige Kohäsion, denn die drei Methoden haben fachlich nichts miteinander zu tun.</li>
+          <li class="quiz__option">Hohe Kohäsion, weil statische Methoden automatisch gut wiederverwendbar sind.</li>
+          <li class="quiz__option">Enge Kopplung, da die Klasse gleichzeitig von drei fremden Modulen abhängig ist.</li>
+        </ul>
+        <button class="quiz__check">Prüfen</button>
+        <button class="quiz__reset" type="button">Zurücksetzen</button>
+        <div class="quiz__feedback"></div>
+      </div>
+    </section>
+
+    <!-- ══════════ KAPITEL 2 ══════════ -->
+    <section class="chapter" id="k2">
+      <span class="chapter__tag">Kapitel 2 · Kopplung</span>
+      <h2>Lose Kopplung: Module sollen möglichst wenig übereinander wissen</h2>
+      <p class="lead-in"><span class="keyword">Kopplung</span> beschreibt, wie stark ein Modul von einem anderen abhängt — wie viel es über dessen Innenleben wissen muss, damit alles funktioniert. Es gibt eine ganze akademische Taxonomie von Kopplungsarten; für den Alltag reichen zwei Unterscheidungen, die wirklich etwas verändern.</p>
+
+      <h3>1. Kopplung über konkrete Klassen vs. über Interfaces</h3>
+      <p>Wenn Modul A direkt eine konkrete Klasse aus Modul B erzeugt und aufruft, ist A an jede Detailentscheidung von B gebunden. Programmiert A stattdessen gegen ein Interface, das B anbietet, kann sich die Implementierung hinter dem Interface ändern, ohne dass A etwas davon merkt.</p>
+
+      <div class="split-cols">
+        <div>
+          <span class="split-cols__label split-cols__label--bad">Kopplung an konkrete Klasse</span>
+          <div class="code-block code-block--bad">MySqlKundenRepository repo =
+    new MySqlKundenRepository();
+repo.findeKunde(id);</div>
+        </div>
+        <div>
+          <span class="split-cols__label split-cols__label--good">Kopplung über Interface</span>
+          <div class="code-block code-block--good">KundenRepository repo =
+    KundenRepositoryFactory.create();
+repo.findeKunde(id);</div>
+        </div>
+      </div>
+
+      <h3>2. Kopplung über viele Einzelparameter vs. über ein klar definiertes Objekt</h3>
+      <p>Eine Methode mit sechs Einzelparametern zwingt jeden Aufrufer, die exakte Reihenfolge und Bedeutung jedes Parameters zu kennen — und jede neue Angabe (z. B. eine zusätzliche Adresszeile) ändert die Signatur überall. Fasst man zusammengehörige Werte stattdessen in einem Objekt zusammen, ändert sich die Methodensignatur nicht mehr, nur das Objekt wächst.</p>
+
+      <div class="split-cols">
+        <div>
+          <span class="split-cols__label split-cols__label--bad">Viele Einzelparameter</span>
+          <div class="code-block code-block--bad">void versende(String strasse,
+    String plz, String ort,
+    String land, String name,
+    String telefon) { <span class="cm">/*...*/</span> }</div>
+        </div>
+        <div>
+          <span class="split-cols__label split-cols__label--good">Ein Objekt</span>
+          <div class="code-block code-block--good">void versende(
+    Lieferadresse adresse) {
+  <span class="cm">/* ... */</span>
+}</div>
+        </div>
+      </div>
+
+      <p>Beide Muster laufen auf dasselbe Prinzip hinaus: <span class="keyword">lose Kopplung</span> heißt, dass ein Modul nur an eine stabile, minimale Schnittstelle gebunden ist — nicht an alle Details, die dahinterstecken.</p>
+
+      <div class="quiz" data-quiz-type="mc">
+        <p class="quiz__question">Welche der folgenden Situationen sind Beispiele für <b>enge Kopplung</b> zwischen zwei Modulen? <span class="quiz__hint">(mehrere richtig)</span></p>
+        <ul class="quiz__options">
+          <li class="quiz__option" data-correct>Ein Modul erzeugt direkt eine konkrete Klasse aus einem anderen Modul statt eines Interfaces.</li>
+          <li class="quiz__option" data-correct>Eine Methode verlangt sechs einzelne Parameter, die eigentlich zusammengehörige Felder eines Kunden sind.</li>
+          <li class="quiz__option">Ein Modul ruft eine Methode über ein klar definiertes Interface des anderen Moduls auf.</li>
+          <li class="quiz__option">Zwei Module werden unabhängig voneinander in unterschiedlichen Versionen ausgeliefert und betrieben.</li>
+        </ul>
+        <button class="quiz__check">Prüfen</button>
+        <button class="quiz__reset" type="button">Zurücksetzen</button>
+        <div class="quiz__feedback"></div>
+      </div>
+    </section>
+
+    <!-- ══════════ KAPITEL 3 ══════════ -->
+    <section class="chapter" id="k3">
+      <span class="chapter__tag">Kapitel 3 · Abhängigkeitsrichtung</span>
+      <h2>Abhängigkeiten zeigen auf Abstraktionen, nicht auf Details</h2>
+      <p class="lead-in">Das ist dir nicht fremd: In <a href="01_SOLID_Prinzipien.html">Modul 01</a> hast du das <span class="keyword">Dependency Inversion Principle</span> kennengelernt — hochrangige Module sollen nicht von niedrigrangigen Modulen abhängen, sondern beide von Abstraktionen. In <a href="03_Architekturstile.html">Modul 03</a> hast du gesehen, wie Hexagonal Architecture genau das auf Systemebene erzwingt: der Domänenkern kennt nur Ports (Interfaces), nie konkrete Adapter.</p>
+      <p>Genau dasselbe Prinzip gilt jetzt auf <b>Modulebene</b>, nicht nur zwischen Schichten oder einzelnen Klassen: Ein fachliches Modul sollte auf stabile Abstraktionen zeigen — Interfaces, gemeinsame Domänenbegriffe, klar definierte Schnittstellen — und nicht auf volatile Implementierungsdetails, die sich häufig ändern (konkrete Datenbank-Zugriffe, externe API-Clients, technische Hilfsklassen eines anderen Moduls).</p>
+
+      <div class="callout callout--note">
+        <div class="callout__icon">🧭</div>
+        <div class="callout__body"><b>Merkregel:</b> Volatile Dinge (Details, die sich oft ändern) sollen von stabilen Dingen (Abstraktionen, die sich selten ändern) abhängen — nie umgekehrt. Zeigt ein stabiles Modul auf ein volatiles Detail, reißt jede Detail-Änderung das stabile Modul mit.</div>
+      </div>
+
+      <details class="reveal">
+        <summary>Warum ist "stabil" hier nicht dasselbe wie "wichtig"?</summary>
+        <div class="q"><p>Weil Stabilität etwas über die <b>Änderungshäufigkeit</b> aussagt, nicht über die fachliche Bedeutung. Ein Zahlungsdienstleister-API-Client kann fachlich extrem wichtig sein — und trotzdem volatil, weil sich API-Verträge, SDKs und Versionen ändern. Genau deshalb sollte die Domänenlogik nicht direkt an diesen Client gekoppelt sein, sondern an ein stabiles Interface, hinter dem der Client austauschbar bleibt.</p></div>
+      </details>
+    </section>
+
+    <!-- ══════════ KAPITEL 4 ══════════ -->
+    <section class="chapter" id="k4">
+      <span class="chapter__tag">Kapitel 4 · Zyklische Abhängigkeiten</span>
+      <h2>Zyklische Abhängigkeiten: wenn niemand mehr allein verstanden werden kann</h2>
+      <p class="lead-in">Eine <span class="keyword">zyklische Abhängigkeit</span> entsteht, wenn Modul A von Modul B abhängt — und B gleichzeitig, direkt oder über Umwege, wieder von A. Damit ist der Kreis geschlossen: A→B→A.</p>
+
+      <p>Das klingt harmlos, ist es aber nicht. Sobald ein Zyklus existiert, verschmelzen A und B faktisch zu einem einzigen, größeren Modul — nur dass niemand das so benannt hat:</p>
+      <ul>
+        <li>Du kannst A nicht mehr verstehen, ohne B zu verstehen, und umgekehrt — die kognitive Last verdoppelt sich mindestens.</li>
+        <li>Du kannst A nicht mehr isoliert testen, weil ein Test von A automatisch echtes (oder gemocktes) Verhalten von B mitschleppt.</li>
+        <li>Du kannst A nicht mehr austauschen oder unabhängig deployen, ohne B mit anzufassen.</li>
+      </ul>
+
+      <p>Die Auflösung folgt fast immer demselben Muster: Man extrahiert genau den Teil, den beide Seiten wirklich voneinander brauchen, in ein <b>drittes, neutrales Modul</b> — eine gemeinsame Abstraktion, von der beide ursprünglichen Module abhängen dürfen, ohne dass ein Zyklus entsteht. Manchmal reicht es auch, eine der beiden Abhängigkeiten einfach umzukehren oder ganz zu entfernen, weil sie beim genauen Hinsehen gar nicht nötig war.</p>
+
+      <div class="dep-compare">
+        <div class="viz">
+          <div class="viz__title">Vorher — zyklisch</div>
+          <canvas id="depVorherChart" height="320"></canvas>
+          <p class="viz__cap">4 Module, 7 Abhängigkeiten, 3 davon zyklisch (Doppelpfeile). <code class="inline">Bestellung</code> ist mit allen anderen wechselseitig verflochten.</p>
+        </div>
+        <div class="viz">
+          <div class="viz__title">Nachher — azyklisch</div>
+          <canvas id="depNachherChart" height="320"></canvas>
+          <p class="viz__cap">5 Module (inkl. neuem <code class="inline">Kundenreferenz</code>-Interface), 4 Abhängigkeiten, jede zeigt nur in eine Richtung — kein Pfeil führt zurück.</p>
+        </div>
+      </div>
+
+      <div class="callout callout--warn">
+        <div class="callout__icon">🚩</div>
+        <div class="callout__body">Genau dieses Muster — <code class="inline">Bestellung</code> und <code class="inline">Kunde</code> über eine gemeinsame <code class="inline">Kundenreferenz</code>-Abstraktion entkoppeln — baust du gleich in der Übung <code class="inline">code/04-modularitaet</code> selbst nach.</div>
+      </div>
+
+      <details class="reveal">
+        <summary>Ist jede Abhängigkeit zwischen zwei Modulen automatisch ein Problem?</summary>
+        <div class="q"><p>Nein. Abhängigkeiten sind normal und notwendig — kein System besteht aus komplett isolierten Modulen. Problematisch wird es erst, wenn eine Abhängigkeit <b>zyklisch</b> ist oder auf ein volatiles Detail statt auf eine stabile Abstraktion zeigt (siehe Kapitel 3). Eine einseitige, klare Abhängigkeit auf eine stabile Schnittstelle ist völlig gesund.</p></div>
+      </details>
+    </section>
+
+    <!-- ══════════ KAPITEL 5 ══════════ -->
+    <section class="chapter" id="k5">
+      <span class="chapter__tag">Kapitel 5 · Modul-Schnitt</span>
+      <h2>Module nach Fachlichkeit schneiden, nicht nach Technik</h2>
+      <p class="lead-in">Die letzte große Design-Entscheidung ist: Entlang welcher Linie schneidest du dein System überhaupt in Module? Zwei Optionen kommen in der Praxis ständig vor — und nur eine davon hält fachliche Änderungen lokal.</p>
+
+      <div class="layer-example">
+        <div class="layer-example__title layer-example__title--good">Schnitt nach Fachlichkeit (Business-Fähigkeiten)</div>
+        <p style="margin:0">Modul <code class="inline">bestellung</code> enthält alles rund um Bestellungen: Controller, Domänenlogik und Datenzugriff für Bestellungen. Modul <code class="inline">kundenverwaltung</code> enthält entsprechend alles rund um Kunden. Ändert sich eine Regel zur Bestellstornierung, betrifft das ausschließlich das Modul <code class="inline">bestellung</code>.</p>
+      </div>
+      <div class="layer-example">
+        <div class="layer-example__title layer-example__title--bad">Schnitt nach Technik (quer über alle Fachlichkeiten)</div>
+        <p style="margin:0">Ein Modul <code class="inline">controller</code> enthält die Controller <i>aller</i> Fachlichkeiten, ein Modul <code class="inline">repository</code> enthält <i>alle</i> Datenbankzugriffe. Ändert sich dieselbe Regel zur Bestellstornierung, musst du jetzt in drei riesigen, fachlich gemischten Modulen je eine Stelle finden und anfassen — und dabei aufpassen, nichts anzufassen, was zu Kunden, Produkten oder Versand gehört.</p>
+      </div>
+
+      <p>Der technische Schnitt fühlt sich anfangs ordentlich an — "alle Controller an einem Ort" klingt nach Struktur. Das Problem zeigt sich erst, wenn eine fachliche Änderung ansteht: Sie verteilt sich über alle technischen Module gleichzeitig, während bei einem fachlichen Schnitt dieselbe Änderung in einem einzigen Modul bleibt.</p>
+
+      <p>Ordne die folgenden Verantwortlichkeiten dem richtigen fachlichen Modul zu:</p>
+      <div class="dragdrop">
+        <div class="dragdrop__layout">
+          <div class="dragdrop__pool">
+            <span class="dragdrop__col-label">Verantwortlichkeiten</span>
+            <div class="dragdrop__item" data-match="bestellung">Zahlungsabwicklung</div>
+            <div class="dragdrop__item" data-match="bestellung">Bestellstatus prüfen</div>
+            <div class="dragdrop__item" data-match="bestellung">Warenkorb zusammenstellen</div>
+            <div class="dragdrop__item" data-match="kundenverwaltung">Adresse ändern</div>
+            <div class="dragdrop__item" data-match="kundenverwaltung">Login</div>
+            <div class="dragdrop__item" data-match="kundenverwaltung">Passwort zurücksetzen</div>
+          </div>
+          <div class="dragdrop__targets">
+            <span class="dragdrop__col-label">Modul</span>
+            <div class="dragdrop__target" data-target="bestellung"><span class="dragdrop__target-label">Bestellung</span><div class="dragdrop__slot"></div></div>
+            <div class="dragdrop__target" data-target="kundenverwaltung"><span class="dragdrop__target-label">Kundenverwaltung</span><div class="dragdrop__slot"></div></div>
+          </div>
+          <div class="dragdrop__actions">
+            <button class="dragdrop__check">Prüfen</button>
+            <button class="quiz__reset" type="button">Zurücksetzen</button>
+            <div class="quiz__feedback"></div>
+          </div>
+        </div>
+      </div>
+
+      <p>Zum Abschluss noch einmal die Kernbegriffe dieses Moduls im Zusammenhang:</p>
+      <div class="cloze">
+        <p class="cloze__text">Innerhalb eines Moduls strebst du nach hoher <input class="cloze__blank" data-answer="Kohäsion|Kohaesion" size="10">, zwischen Modulen dagegen nach loser <input class="cloze__blank" data-answer="Kopplung" size="10">. Hängt Modul A von B ab und gleichzeitig B von A, ist die Abhängigkeit <input class="cloze__blank" data-answer="zyklisch|zyklische" size="10">; das Ziel ist eine Struktur, die <input class="cloze__blank" data-answer="azyklisch|azyklische" size="10"> ist. Deshalb schneidet man Module entlang der <input class="cloze__blank" data-answer="Fachlichkeit" size="12">, nicht entlang technischer Schichten.</p>
+        <div class="cloze__actions">
+          <button class="cloze__check">Prüfen</button>
+          <button class="quiz__reset" type="button">Zurücksetzen</button>
+        </div>
+        <div class="quiz__feedback"></div>
+      </div>
+    </section>
+
+    <!-- ══════════ KAPITEL 6 ══════════ -->
+    <section class="chapter" id="k6">
+      <span class="chapter__tag">Kapitel 6 · Selbstcheck</span>
+      <h2>Bist du fit für Modul 05?</h2>
+      <p>Klick die Karten um. Wenn du diese fünf sicher beantwortest, kannst du in der Fallstudie ganze Module selbst so schneiden, dass sie wartbar bleiben.</p>
+
+      <div class="cards">
+        <div class="card3d"><div class="card3d__inner">
+          <div class="card3d__face card3d__front"><span class="card3d__tag">Kohäsion</span><span class="card3d__q">Was bedeutet hohe Kohäsion innerhalb eines Moduls?</span><span class="card3d__hint">klick</span></div>
+          <div class="card3d__face card3d__back"><span class="card3d__tag">Antwort</span><span class="card3d__a">Alles, was fachlich zusammengehört, liegt auch im selben Modul beieinander — statt verteilt über eine Sammel-"Utils"-Klasse.</span></div>
+        </div></div>
+        <div class="card3d"><div class="card3d__inner">
+          <div class="card3d__face card3d__front"><span class="card3d__tag">Kopplung</span><span class="card3d__q">Nenne zwei Arten, wie Module zu eng gekoppelt sein können.</span><span class="card3d__hint">klick</span></div>
+          <div class="card3d__face card3d__back"><span class="card3d__tag">Antwort</span><span class="card3d__a">Über konkrete Klassen statt Interfaces — und über viele Einzelparameter statt ein klar definiertes Objekt.</span></div>
+        </div></div>
+        <div class="card3d"><div class="card3d__inner">
+          <div class="card3d__face card3d__front"><span class="card3d__tag">Abhängigkeitsrichtung</span><span class="card3d__q">In welche Richtung sollen Abhängigkeiten zeigen?</span><span class="card3d__hint">klick</span></div>
+          <div class="card3d__face card3d__back"><span class="card3d__tag">Antwort</span><span class="card3d__a">Auf stabile Abstraktionen, nicht auf volatile Details — dasselbe Prinzip wie DIP und Hexagonal Architecture, nur auf Modulebene.</span></div>
+        </div></div>
+        <div class="card3d"><div class="card3d__inner">
+          <div class="card3d__face card3d__front"><span class="card3d__tag">Zyklen</span><span class="card3d__q">Warum sind zyklische Abhängigkeiten gefährlich?</span><span class="card3d__hint">klick</span></div>
+          <div class="card3d__face card3d__back"><span class="card3d__tag">Antwort</span><span class="card3d__a">Kein beteiligtes Modul lässt sich mehr unabhängig verstehen, testen oder austauschen.</span></div>
+        </div></div>
+        <div class="card3d"><div class="card3d__inner">
+          <div class="card3d__face card3d__front"><span class="card3d__tag">Modul-Schnitt</span><span class="card3d__q">Wonach sollten Module geschnitten werden?</span><span class="card3d__hint">klick</span></div>
+          <div class="card3d__face card3d__back"><span class="card3d__tag">Antwort</span><span class="card3d__a">Nach Fachlichkeit (z. B. Bestellung, Kundenverwaltung), nicht nach Technik (z. B. alle Controller in einem Modul).</span></div>
+        </div></div>
+      </div>
+
+      <details class="reveal">
+        <summary>Warum löst eine ordentlich formatierte "Utils"-Klasse kein Kohäsionsproblem?</summary>
+        <div class="q"><p>Weil Formatierung und Sauberkeit im Kleinen nichts über den fachlichen Zusammenhang der Methoden aussagen. Kohäsion ist eine Frage des <i>Inhalts</i>, nicht des <i>Stils</i>: Drei sauber geschriebene, aber fachlich fremde Methoden bleiben fachlich fremd, egal wie ordentlich sie aussehen.</p></div>
+      </details>
+      <details class="reveal">
+        <summary>Reicht "wir haben ein Interface eingeführt" allein, um lose Kopplung zu garantieren?</summary>
+        <div class="q"><p>Nein. Ein Interface hilft nur, wenn es so geschnitten ist, dass es genau das zeigt, was der Aufrufer wirklich braucht — nicht die komplette Methodenliste der bisherigen konkreten Klasse. Ein "Interface", das 1:1 alle Methoden einer einzigen Implementierung kopiert, ist oft nur ein Etikett, das die enge Kopplung versteckt, statt sie aufzulösen.</p></div>
+      </details>
+      <details class="reveal">
+        <summary>Ist ein technischer Modul-Schnitt (alle Controller, alle Repositories) grundsätzlich falsch?</summary>
+        <div class="q"><p>Nicht grundsätzlich — für sehr kleine Systeme mit wenig fachlicher Komplexität kann er einfacher sein. Er wird zum Problem, sobald das System wächst: Dann verteilt sich jede fachliche Änderung zuverlässig über mehrere technische Module, während ein fachlicher Schnitt dieselbe Änderung lokal hält.</p></div>
+      </details>
+
+      <div class="callout callout--note" style="margin-top:28px">
+        <div class="callout__icon">🚀</div>
+        <div class="callout__body"><b>Nächster Schritt:</b> Bearbeite die Übung in <code class="inline">code/04-modularitaet/</code> — löse dort einen echten zyklischen Abhängigkeitsfall zwischen <code class="inline">bestellung</code> und <code class="inline">kunde</code> per gemeinsamer Abstraktion auf. Danach geht's weiter mit <a href="05_Fallstudie_Kleines_System.html">Modul 05 · Fallstudie: Kleines System</a>.</div>
+      </div>
+    </section>
+
+    <footer class="foot">
+      <span>Modul 04 · Modularität, Kopplung & Kohäsion</span>
+      <span><a href="03_Architekturstile.html">← Modul 03</a> · <a href="05_Fallstudie_Kleines_System.html">Modul 05 →</a></span>
+    </footer>
+  </main>
+</div>
+
+<script src="../js/quiz.js"></script>
+<script>
+/* ── Modul-Visualisierungen: Vorher/Nachher-Abhängigkeitsgraphen ── */
+(function(){
+  "use strict";
+  var css = function(v){ return getComputedStyle(document.documentElement).getPropertyValue(v).trim() || "#4453c4"; };
+  function fit(cv){
+    var dpr = window.devicePixelRatio || 1;
+    var w = cv.clientWidth || 600, h = cv.clientHeight || 320;
+    if (cv.width !== w*dpr || cv.height !== h*dpr){ cv.width = w*dpr; cv.height = h*dpr; }
+    var ctx = cv.getContext("2d"); ctx.setTransform(dpr,0,0,dpr,0,0);
+    return { ctx: ctx, w: w, h: h };
+  }
+
+  function pt(b, side, offset){
+    offset = offset || 0;
+    if (side === "top")    return { x: b.x + b.w/2 + offset*b.w, y: b.y };
+    if (side === "bottom") return { x: b.x + b.w/2 + offset*b.w, y: b.y + b.h };
+    if (side === "left")   return { x: b.x, y: b.y + b.h/2 + offset*b.h };
+    return { x: b.x + b.w, y: b.y + b.h/2 + offset*b.h }; /* right */
+  }
+
+  function drawBox(ctx, b, dashed){
+    ctx.save();
+    if (dashed) ctx.setLineDash([5,4]);
+    ctx.fillStyle = css("--surface-2");
+    ctx.strokeStyle = css("--ink-mute");
+    ctx.lineWidth = 1.5;
+    ctx.fillRect(b.x, b.y, b.w, b.h);
+    ctx.strokeRect(b.x, b.y, b.w, b.h);
+    ctx.restore();
+    ctx.fillStyle = css("--ink");
+    ctx.font = "700 12.5px 'JetBrains Mono', monospace";
+    ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    ctx.fillText(b.label, b.x + b.w/2, b.y + b.h/2);
+  }
+
+  function drawArrow(ctx, p1, p2, color, curve){
+    curve = curve || 0;
+    var mx = (p1.x+p2.x)/2, my = (p1.y+p2.y)/2;
+    var dx = p2.x-p1.x, dy = p2.y-p1.y, len = Math.sqrt(dx*dx+dy*dy) || 1;
+    var nx = -dy/len, ny = dx/len;
+    var cx = mx + nx*curve, cy = my + ny*curve;
+    ctx.strokeStyle = color; ctx.fillStyle = color; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(p1.x,p1.y); ctx.quadraticCurveTo(cx,cy,p2.x,p2.y); ctx.stroke();
+    var ang = Math.atan2(p2.y-cy, p2.x-cx);
+    var ah = 7;
+    ctx.beginPath();
+    ctx.moveTo(p2.x, p2.y);
+    ctx.lineTo(p2.x - ah*Math.cos(ang-0.4), p2.y - ah*Math.sin(ang-0.4));
+    ctx.lineTo(p2.x - ah*Math.cos(ang+0.4), p2.y - ah*Math.sin(ang+0.4));
+    ctx.closePath(); ctx.fill();
+  }
+
+  function badge(ctx, x, y, w, text, color, tint){
+    ctx.font = "700 11.5px 'JetBrains Mono', monospace";
+    var pad = 10, th = 22;
+    ctx.textAlign = "left"; ctx.textBaseline = "middle";
+    ctx.fillStyle = tint; ctx.fillRect(x, y, w, th);
+    ctx.fillStyle = color;
+    ctx.fillText(text, x + pad, y + th/2 + 1);
+  }
+
+  /* ── Vorher: 4 Module, 7 Abhängigkeiten, 3 Zyklen ── */
+  var vorherCv = document.getElementById("depVorherChart");
+  function drawVorher(){
+    if (!vorherCv) return;
+    var o = fit(vorherCv), ctx=o.ctx, w=o.w, h=o.h;
+    ctx.clearRect(0,0,w,h);
+
+    var bestellung = { x: w*0.08, y: h*0.28, w: w*0.34, h: 46, label: "Bestellung" };
+    var kunde       = { x: w*0.58, y: h*0.14, w: w*0.34, h: 46, label: "Kunde" };
+    var versand     = { x: w*0.08, y: h*0.74, w: w*0.34, h: 46, label: "Versand" };
+    var zahlung     = { x: w*0.58, y: h*0.74, w: w*0.34, h: 46, label: "Zahlung" };
+
+    var warn = css("--warn");
+    /* Bestellung <-> Kunde (Zyklus 1) */
+    drawArrow(ctx, pt(bestellung,"right",-0.22), pt(kunde,"left",-0.15), warn, -22);
+    drawArrow(ctx, pt(kunde,"left",0.15), pt(bestellung,"right",0.22), warn, -22);
+    /* Bestellung <-> Zahlung (Zyklus 2, diagonal) */
+    drawArrow(ctx, pt(bestellung,"bottom",0.2), pt(zahlung,"top",-0.2), warn, 26);
+    drawArrow(ctx, pt(zahlung,"top",0.2), pt(bestellung,"bottom",-0.2), warn, -26);
+    /* Bestellung <-> Versand (Zyklus 3, vertikal) */
+    drawArrow(ctx, pt(bestellung,"bottom",-0.3), pt(versand,"top",-0.1), warn, 14);
+    drawArrow(ctx, pt(versand,"top",0.1), pt(bestellung,"bottom",0.3), warn, -14);
+    /* Kunde -> Zahlung (nur eine Richtung, zusätzliche Überkreuzung) */
+    drawArrow(ctx, pt(kunde,"bottom",0.1), pt(zahlung,"top",0.35), warn, 0);
+
+    drawBox(ctx, bestellung); drawBox(ctx, kunde); drawBox(ctx, versand); drawBox(ctx, zahlung);
+
+    badge(ctx, w*0.06, h*0.03, w*0.9, "⟲ zyklisch: Bestellung ↔ Kunde ↔ Zahlung ↔ Versand — 3 Zyklen, 7 Abhängigkeiten", css("--warn"), css("--warn-tint"));
+  }
+
+  /* ── Nachher: 5 Module, 4 Abhängigkeiten, alle azyklisch ── */
+  var nachherCv = document.getElementById("depNachherChart");
+  function drawNachher(){
+    if (!nachherCv) return;
+    var o = fit(nachherCv), ctx=o.ctx, w=o.w, h=o.h;
+    ctx.clearRect(0,0,w,h);
+
+    var kunde        = { x: w*0.04, y: h*0.16, w: w*0.26, h: 42, label: "Kunde" };
+    var zahlung       = { x: w*0.36, y: h*0.16, w: w*0.28, h: 42, label: "Zahlung" };
+    var versand       = { x: w*0.70, y: h*0.16, w: w*0.26, h: 42, label: "Versand" };
+    var bestellung    = { x: w*0.34, y: h*0.46, w: w*0.32, h: 42, label: "Bestellung" };
+    var kundenref     = { x: w*0.16, y: h*0.78, w: w*0.44, h: 40, label: "«Interface» Kundenreferenz" };
+
+    var good = css("--good");
+    drawArrow(ctx, pt(zahlung,"bottom",0), pt(bestellung,"top",0.25), good, 0);
+    drawArrow(ctx, pt(versand,"bottom",0), pt(bestellung,"top",0.4), good, 12);
+    drawArrow(ctx, pt(kunde,"bottom",0), pt(kundenref,"top",-0.3), good, -10);
+    drawArrow(ctx, pt(bestellung,"bottom",0), pt(kundenref,"top",0.15), good, 0);
+
+    drawBox(ctx, kunde); drawBox(ctx, zahlung); drawBox(ctx, versand); drawBox(ctx, bestellung);
+    drawBox(ctx, kundenref, true);
+
+    ctx.font = "10.5px 'JetBrains Mono', monospace";
+    ctx.fillStyle = css("--ink-mute"); ctx.textAlign = "center";
+    ctx.fillText("implementiert", kunde.x + kunde.w*0.65, kundenref.y - 10);
+    ctx.fillText("nutzt nur Interface", bestellung.x + bestellung.w*0.5, kundenref.y - 10);
+
+    badge(ctx, w*0.06, h*0.02, w*0.9, "✓ azyklisch — jeder Pfeil zeigt nur nach unten, 0 Zyklen, 4 Abhängigkeiten", css("--good"), css("--good-tint"));
+  }
+
+  function redrawAll(){ drawVorher(); drawNachher(); }
+  window.addEventListener("resize", redrawAll);
+  window.addEventListener("load", redrawAll);
+  redrawAll();
+})();
+</script>
+</body>
+</html>

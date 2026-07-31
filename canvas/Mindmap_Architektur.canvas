@@ -1,0 +1,64 @@
+{
+	"nodes":[
+		{"id":"center","type":"text","text":"# Softwarearchitektur & frühe Projektplanung\nBootcamp-Mindmap — 6 Module","x":-260,"y":-620,"width":520,"height":110,"color":"5"},
+
+		{"id":"legende","type":"text","text":"**Legende:**\n🔴 Kernthema — muss sitzen\n🟢 Vertiefung — gutes Zusatzwissen\n🟣 Praxis/Reflexion — Fallstricke & Anwendung","x":320,"y":-620,"width":300,"height":110,"color":"6"},
+
+		{"id":"g-m0","type":"group","x":-1500,"y":-380,"width":880,"height":420,"color":"2","label":"Modul 0 · Vom Problem zum Plan"},
+		{"id":"m0-1","type":"text","text":"Anforderungen sammeln (funktional / nicht-funktional)","x":-1460,"y":-320,"width":380,"height":80,"color":"1"},
+		{"id":"m0-2","type":"text","text":"User Stories & Akzeptanzkriterien","x":-1040,"y":-320,"width":380,"height":80,"color":"1"},
+		{"id":"m0-3","type":"text","text":"MVP-Scoping: Muss vs. Kann vs. Später","x":-1460,"y":-210,"width":380,"height":80,"color":"1"},
+		{"id":"m0-4","type":"text","text":"Architecture Decision Records (ADR)","x":-1040,"y":-210,"width":380,"height":80,"color":"4"},
+		{"id":"m0-5","type":"text","text":"Tech-Stack-Entscheidung: Kriterien statt Bauchgefühl","x":-1460,"y":-100,"width":820,"height":80,"color":"4"},
+
+		{"id":"g-m1","type":"group","x":-560,"y":-380,"width":880,"height":420,"color":"3","label":"Modul 1 · SOLID-Prinzipien"},
+		{"id":"m1-1","type":"text","text":"S — Single Responsibility: eine Klasse, ein Änderungsgrund","x":-520,"y":-320,"width":800,"height":70,"color":"1"},
+		{"id":"m1-2","type":"text","text":"O — Open/Closed: erweiterbar ohne bestehenden Code zu ändern","x":-520,"y":-235,"width":800,"height":70,"color":"1"},
+		{"id":"m1-3","type":"text","text":"L — Liskov Substitution: Subtypen dürfen Verträge nicht brechen","x":-520,"y":-150,"width":800,"height":70,"color":"1"},
+		{"id":"m1-4","type":"text","text":"I — Interface Segregation: kleine, passgenaue Schnittstellen","x":-520,"y":-65,"width":390,"height":70,"color":"4"},
+		{"id":"m1-5","type":"text","text":"D — Dependency Inversion: gegen Abstraktionen, nicht Details","x":-110,"y":-65,"width":390,"height":70,"color":"1"},
+
+		{"id":"g-m2","type":"group","x":420,"y":-380,"width":900,"height":420,"color":"6","label":"Modul 2 · Design Patterns"},
+		{"id":"m2-1","type":"text","text":"Strategy — austauschbares Verhalten zur Laufzeit","x":460,"y":-320,"width":390,"height":75,"color":"1"},
+		{"id":"m2-2","type":"text","text":"Factory Method — Objekterzeugung entkoppeln","x":870,"y":-320,"width":390,"height":75,"color":"1"},
+		{"id":"m2-3","type":"text","text":"Observer — Ereignisse an mehrere Abonnenten verteilen","x":460,"y":-230,"width":390,"height":75,"color":"1"},
+		{"id":"m2-4","type":"text","text":"Adapter — inkompatible Schnittstellen anpassen","x":870,"y":-230,"width":390,"height":75,"color":"4"},
+		{"id":"m2-5","type":"text","text":"Decorator — Verhalten dynamisch erweitern statt vererben","x":460,"y":-140,"width":390,"height":75,"color":"4"},
+		{"id":"m2-6","type":"text","text":"Singleton — Fallstricke: globaler Zustand, schwer testbar","x":870,"y":-140,"width":390,"height":75,"color":"6"},
+
+		{"id":"g-m3","type":"group","x":-1500,"y":140,"width":880,"height":380,"color":"2","label":"Modul 3 · Architekturstile"},
+		{"id":"m3-1","type":"text","text":"Schichtenarchitektur (Layered): Presentation / Domain / Data","x":-1460,"y":200,"width":800,"height":75,"color":"1"},
+		{"id":"m3-2","type":"text","text":"MVC — Trennung von Daten, Logik und Darstellung","x":-1460,"y":290,"width":390,"height":75,"color":"1"},
+		{"id":"m3-3","type":"text","text":"Clean / Hexagonal Architecture: Kern unabhängig von Frameworks","x":-1050,"y":290,"width":390,"height":75,"color":"1"},
+		{"id":"m3-4","type":"text","text":"Monolith vs. Microservices — wann lohnt sich was?","x":-1460,"y":380,"width":800,"height":75,"color":"4"},
+
+		{"id":"g-m4","type":"group","x":-560,"y":140,"width":880,"height":380,"color":"3","label":"Modul 4 · Modularität, Kopplung & Kohäsion"},
+		{"id":"m4-1","type":"text","text":"Hohe Kohäsion innerhalb, lose Kopplung zwischen Modulen","x":-520,"y":200,"width":800,"height":75,"color":"1"},
+		{"id":"m4-2","type":"text","text":"Abhängigkeitsrichtung: gegen stabile Abstraktionen zeigen","x":-520,"y":290,"width":390,"height":75,"color":"1"},
+		{"id":"m4-3","type":"text","text":"Zyklische Abhängigkeiten erkennen & auflösen","x":-110,"y":290,"width":390,"height":75,"color":"4"},
+		{"id":"m4-4","type":"text","text":"Module nach Fachlichkeit schneiden, nicht nach Technik","x":-520,"y":380,"width":800,"height":75,"color":"4"},
+
+		{"id":"g-m5","type":"group","x":420,"y":140,"width":900,"height":380,"color":"6","label":"Modul 5 · Fallstudie: Vom Konzept zum System"},
+		{"id":"m5-1","type":"text","text":"Anforderungen → passende Architektur-Entscheidung ableiten","x":460,"y":200,"width":820,"height":75,"color":"6"},
+		{"id":"m5-2","type":"text","text":"Mehrere Patterns im Zusammenspiel anwenden","x":460,"y":290,"width":390,"height":75,"color":"6"},
+		{"id":"m5-3","type":"text","text":"Schnittstellen zwischen Schichten sauber definieren","x":870,"y":290,"width":390,"height":75,"color":"6"},
+		{"id":"m5-4","type":"text","text":"Reflexion: Was würde ich beim nächsten Projekt anders planen?","x":460,"y":380,"width":820,"height":75,"color":"6"},
+
+		{"id":"link-readme","type":"file","file":"Bootcamp_Architektur/README.md","x":-260,"y":-800,"width":320,"height":140}
+	],
+	"edges":[
+		{"id":"e-c-m0","fromNode":"center","fromSide":"left","toNode":"g-m0","toSide":"top","color":"2","label":"zuerst planen"},
+		{"id":"e-c-m1","fromNode":"center","fromSide":"bottom","toNode":"g-m1","toSide":"top","color":"3"},
+		{"id":"e-c-m2","fromNode":"center","fromSide":"right","toNode":"g-m2","toSide":"top","color":"6"},
+		{"id":"e-m1-m2","fromNode":"g-m1","fromSide":"right","toNode":"g-m2","toSide":"left","color":"3","label":"Prinzipien → Muster"},
+		{"id":"e-m0-m3","fromNode":"g-m0","fromSide":"bottom","toNode":"g-m3","toSide":"top","color":"2","label":"Plan → Struktur"},
+		{"id":"e-m1-m4","fromNode":"g-m1","fromSide":"bottom","toNode":"g-m4","toSide":"top","color":"3","label":"D-Prinzip ↔ Kopplung"},
+		{"id":"e-m3-m4","fromNode":"g-m3","fromSide":"right","toNode":"g-m4","toSide":"left","color":"2"},
+		{"id":"e-m5-m0","fromNode":"g-m5","fromSide":"left","toNode":"g-m0","toSide":"right","color":"6","label":"wendet an"},
+		{"id":"e-m5-m1","fromNode":"g-m5","fromSide":"top","toNode":"g-m1","toSide":"bottom","color":"6","label":"wendet an"},
+		{"id":"e-m5-m2","fromNode":"g-m5","fromSide":"top","toNode":"g-m2","toSide":"bottom","color":"6","label":"wendet an"},
+		{"id":"e-m5-m3","fromNode":"g-m5","fromSide":"left","toNode":"g-m3","toSide":"right","color":"6","label":"wendet an"},
+		{"id":"e-m5-m4","fromNode":"g-m5","fromSide":"left","toNode":"g-m4","toSide":"right","color":"6","label":"wendet an"},
+		{"id":"e-legende","fromNode":"legende","fromSide":"bottom","toNode":"center","toSide":"top","color":"5"}
+	]
+}

@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SOLID-Prinzipien — Modul 01 · Bootcamp Architektur</title>
+<link rel="stylesheet" href="../css/styles.css">
+<style>
+  /* Modul-spezifische Ergänzungen — nutzen nur Farben aus styles.css/colorpalett.css */
+  .principle-row { display: flex; align-items: center; gap: 14px; margin: 4px 0 20px; }
+  .principle-letter {
+    font-family: var(--display); font-weight: 800; font-size: 32px; color: var(--accent-deep);
+    background: var(--accent-tint); width: 54px; height: 54px; border-radius: var(--radius);
+    display: grid; place-items: center; flex-shrink: 0;
+  }
+  .principle-name { font-size: 13.5px; color: var(--ink-mute); max-width: 46ch; }
+  .principle-name b { color: var(--ink); }
+
+  .code-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 18px 0; }
+  @media (max-width: 760px) { .code-cols { grid-template-columns: 1fr; } }
+  .code-block { background: var(--surface); border: 1px solid var(--hair); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; }
+  .code-block__label { font-family: var(--mono); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; font-weight: 700; padding: 8px 14px; color: #fff; }
+  .code-block--before .code-block__label { background: var(--warn); }
+  .code-block--after .code-block__label { background: var(--good); }
+  .code-block--neutral .code-block__label { background: var(--accent); }
+  .code-block pre { margin: 0; padding: 14px 16px; overflow-x: auto; background: var(--surface-2); }
+  .code-block code { font-family: var(--mono); font-size: 12.5px; line-height: 1.55; color: var(--ink); white-space: pre; }
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <aside class="rail">
+    <div class="brand">
+      <span class="brand__mark">Bootcamp · Architektur</span>
+      <span class="brand__name">Softwarearchitektur & Projektplanung</span>
+      <span class="brand__sub">Vom ersten Anforderungssatz bis zum fertigen Entwurf</span>
+    </div>
+    <div class="note-strip">
+      Lies der Reihe nach. <b>Spiel mit den Grafiken</b> und rechne die Übungen mit — das bleibt hängen, nicht das bloße Lesen.
+    </div>
+    <nav class="nav">
+      <div class="nav__group">Module</div>
+      <a class="nav__task" href="00_Vom_Problem_zum_Plan.html"><span class="nav__num">00</span><span class="nav__label">Vom Problem zum Plan</span></a>
+      <a class="nav__task is-active" href="01_SOLID_Prinzipien.html"><span class="nav__num">01</span><span class="nav__label">SOLID-Prinzipien</span></a>
+      <a class="nav__task" href="02_Design_Patterns_Grundlagen.html"><span class="nav__num">02</span><span class="nav__label">Design Patterns</span></a>
+      <a class="nav__task" href="03_Architekturstile.html"><span class="nav__num">03</span><span class="nav__label">Architekturstile</span></a>
+      <a class="nav__task" href="04_Modularitaet_Kopplung_Kohaesion.html"><span class="nav__num">04</span><span class="nav__label">Modularität & Kopplung</span></a>
+      <a class="nav__task" href="05_Fallstudie_Kleines_System.html"><span class="nav__num">05</span><span class="nav__label">Fallstudie: Kleines System</span></a>
+    </nav>
+    <div class="rail__foot">
+      <a class="nav__task" href="index.html"><span class="nav__num">←</span><span class="nav__label">Zur Übersicht</span></a>
+      <a class="nav__task" href="../Lernpfad.md"><span class="nav__num">📅</span><span class="nav__label">Lernpfad</span></a>
+      <a class="nav__task" href="../code/01-solid"><span class="nav__num">💻</span><span class="nav__label">Übung: 01-solid</span></a>
+    </div>
+  </aside>
+
+  <main class="main">
+    <header class="masthead">
+      <div class="masthead__rule"><span><span class="dot"></span>Modul 01 · Objektorientiertes Design</span><span>~40 Min Lesezeit</span></div>
+      <div class="kicker">Prinzipien für änderbaren Code</div>
+      <h1>SOLID <em>Prinzipien</em></h1>
+      <p class="lede">Dein Code funktioniert heute. Die eigentliche Frage ist: Funktioniert er in sechs Monaten auch noch, wenn eine neue Anforderung dazukommt? SOLID sind fünf Faustregeln, die genau das beeinflussen — nicht als akademische Pflichtübung, sondern als Antwort auf die Frage, warum Code mit der Zeit immer schwerer änderbar wird.</p>
+    </header>
+
+    <!-- ══════════ KAPITEL 0 ══════════ -->
+    <section class="chapter" id="k0">
+      <span class="chapter__tag">Kapitel 0 · Einstieg</span>
+      <h2>Warum überhaupt Prinzipien?</h2>
+      <p class="lead-in">Fast jedes Softwareprojekt startet schnell und sauber. Nach ein paar Monaten wird jede kleine Änderung zum Drahtseilakt: eine Zeile anpassen, und an drei anderen Stellen bricht etwas. Das ist kein Schicksal — es ist meistens das Ergebnis von fünf immer gleichen Fehlern beim Klassenentwurf.</p>
+      <p>SOLID ist ein Akronym für fünf Prinzipien, die Robert C. Martin aus genau diesen wiederkehrenden Fehlern destilliert hat. Sie sind keine Regeln, die man stur immer maximal anwendet — sie sind ein Werkzeug, um zu erkennen, <i>an welcher Stelle</i> ein Entwurf wahrscheinlich Ärger machen wird, wenn sich eine Anforderung ändert:</p>
+      <ul>
+        <li><b>S</b> — Single Responsibility Principle</li>
+        <li><b>O</b> — Open/Closed Principle</li>
+        <li><b>L</b> — Liskov Substitution Principle</li>
+        <li><b>I</b> — Interface Segregation Principle</li>
+        <li><b>D</b> — Dependency Inversion Principle</li>
+      </ul>
+      <div class="callout callout--think">
+        <div class="callout__icon">💡</div>
+        <div class="callout__body"><b>Aha:</b> Jedes der fünf Prinzipien beantwortet dieselbe Grundfrage aus einem anderen Blickwinkel: <i>Was passiert mit diesem Code, wenn sich etwas ändert?</i> Deshalb zeigt dieses Modul zu jedem Prinzip ein Vorher/Nachher-Beispiel — der Unterschied wird erst beim Ändern sichtbar, nicht beim ersten Lesen.</div>
+      </div>
+    </section>
+
+    <!-- ══════════ KAPITEL 1 · S ══════════ -->
+    <section class="chapter" id="k1">
+      <span class="chapter__tag">Kapitel 1 · Single Responsibility</span>
+      <div class="principle-row">
+        <span class="principle-letter">S</span>
+        <span class="principle-name"><b>Single Responsibility Principle:</b> Eine Klasse sollte nur einen einzigen Grund haben, sich zu ändern.</span>
+      </div>
+      <h2>Ein Änderungsgrund pro Klasse</h2>
+      <p>„Verantwortlichkeit" heißt hier nicht „eine Methode" oder „eine Zeile Code" — es heißt <span class="keyword">ein Änderungsgrund</span>. Wenn eine Klasse aus zwei unabhängigen Gründen geändert werden könnte (z. B. weil sich die Rabattregeln ändern <i>oder</i> weil sich das Druck-Layout ändert), dann hat sie zwei Verantwortlichkeiten — auch wenn sie nur eine Methode dafür pro Aufgabe besitzt.</p>
+
+      <p>Ein klassisches Beispiel: eine <code class="inline">Rechnung</code>-Klasse, die berechnet, druckt <i>und</i> speichert.</p>
+
+      <div class="code-cols">
+        <div class="code-block code-block--before">
+          <div class="code-block__label">Vorher — drei Gründe, sich zu ändern</div>
+          <pre><code>class Rechnung {
+    double berechneGesamtbetrag() { ... }
+
+    void drucken() {
+        double betrag = berechneGesamtbetrag();
+        // Layout-Logik fuer den Ausdruck ...
+    }
+
+    void speichern() {
+        double betrag = berechneGesamtbetrag();
+        // SQL-Statement bauen und ausfuehren ...
+    }
+}</code></pre>
+        </div>
+        <div class="code-block code-block--after">
+          <div class="code-block__label">Nachher — drei Klassen, drei Gründe</div>
+          <pre><code>class Rechnung {
+    // nur Daten: Kunde, Positionen ...
+}
+
+class RechnungsBerechner {
+    double berechneGesamtbetrag(Rechnung r) { ... }
+}
+
+class RechnungsDrucker {
+    void drucken(Rechnung r, double betrag) { ... }
+}
+
+class RechnungsSpeicher {
+    void speichern(Rechnung r, double betrag) { ... }
+}</code></pre>
+        </div>
+      </div>
+
+      <p>Der Gewinn zeigt sich nicht beim Lesen, sondern beim <i>Ändern</i>: Wechselt das Buchhaltungsteam die Steuerlogik, ändert sich nur <code class="inline">RechnungsBerechner</code>. Ändert das Design-Team das PDF-Layout, ändert sich nur <code class="inline">RechnungsDrucker</code>. Keine der beiden Änderungen kann versehentlich die jeweils andere Verantwortlichkeit kaputt machen.</p>
+
+      <div class="callout callout--warn">
+        <div class="callout__icon">🚩</div>
+        <div class="callout__body">Häufiges Missverständnis: SRP heißt <b>nicht</b> „eine Klasse darf nur eine Methode haben". Eine Klasse mit zehn Methoden kann trotzdem SRP-konform sein, solange alle zehn demselben Änderungsgrund dienen (z. B. alle rund um „Berechnung").</div>
+      </div>
+
+      <div class="quiz" data-quiz-type="sc">
+        <p class="quiz__question">Eine Klasse <code class="inline">Mitarbeiter</code> berechnet das Gehalt, formatiert den Ausdruck des Gehaltszettels und schreibt Änderungen direkt in eine Datenbank-Tabelle. Ein Kollege sagt: „Das ist doch okay, es geht ja immer um denselben Mitarbeiter." Was ist die treffendste Erwiderung?</p>
+        <ul class="quiz__options">
+          <li class="quiz__option" data-correct>Nicht das Thema zählt: Gehaltsregeln, Ausdruck-Layout und Datenbankschema ändern sich unabhängig und aus verschiedenen Gründen.</li>
+          <li class="quiz__option">Stimmt, solange nur eine Klasse existiert, bleibt der Code automatisch übersichtlich und leichter testbar.</li>
+          <li class="quiz__option">Das Problem entsteht erst, wenn eine Klasse mehr als drei Methoden besitzt, vorher greift SRP noch nicht.</li>
+          <li class="quiz__option">SRP betrifft nur öffentliche Klassen, interne Hilfsklassen dürfen ruhig mehrere Aufgaben übernehmen.</li>
+        </ul>
+        <button class="quiz__check">Prüfen</button>
+        <button class="quiz__reset" type="button">Zurücksetzen</button>
+        <div class="quiz__feedback"></div>
+      </div>
+    </section>
+
+    <!-- ══════════ KAPITEL 2 · O ══════════ -->
+    <section class="chapter" id="k2">
+      <span class="chapter__tag">Kapitel 2 · Open/Closed</span>
+      <div class="principle-row">
+        <span class="principle-letter">O</span>
+        <span class="principle-name"><b>Open/Closed Principle:</b> Offen für Erweiterung, geschlossen für Änderung.</span>
+      </div>
+      <h2>Neues Verhalten hinzufügen, ohne Altes anzufassen</h2>
+      <p>Ein typisches Warnsignal für eine OCP-Verletzung: eine <code class="inline">switch</code>- oder <code class="inline">if/else</code>-Kette über einen „Typ", die bei jeder neuen Variante um einen weiteren Fall ergänzt werden muss.</p>
+
+      <div class="code-cols">
+        <div class="code-block code-block--before">
+          <div class="code-block__label">Vorher — switch über den Typ</div>
+          <pre><code>double berechnePreis(String typ, double preis) {
+    switch (typ) {
+        case "STANDARD": return preis;
+        case "STUDENT":  return preis * 0.90;
+        case "VIP":      return preis * 0.80;
+        default: throw new IllegalArgumentException();
+    }
+}
+// Neue Rabattart "NEUKUNDE"? -&gt; diese Methode
+// MUSS geaendert werden, obwohl sie fuer die
+// bestehenden drei Faelle schon fertig war.</code></pre>
+        </div>
+        <div class="code-block code-block--after">
+          <div class="code-block__label">Nachher — Polymorphismus</div>
+          <pre><code>interface Rabatt {
+    double berechnePreis(double preis);
+}
+class StandardRabatt implements Rabatt {
+    public double berechnePreis(double p) { return p; }
+}
+class StudentenRabatt implements Rabatt {
+    public double berechnePreis(double p) { return p * 0.90; }
+}
+// Neue Rabattart? -&gt; neue Klasse dazu.
+// Keine bestehende Klasse wird angefasst.</code></pre>
+        </div>
+      </div>
+
+      <p>Der Unterschied ist konkret messbar: Im „Vorher" wächst eine einzige Methode mit jeder neuen Rabattart und muss jedes Mal neu getestet werden — auch die längst funktionierenden Fälle. Im „Nachher" kommt nur eine neue, isolierte Klasse dazu; alle bestehenden Klassen und ihre Tests bleiben unberührt.</p>
+
+      <div class="callout callout--note">
+        <div class="callout__icon">🔭</div>
+        <div class="callout__body">Diese Aufteilung in austauschbare Klassen mit gemeinsamer Schnittstelle hat einen Namen: das <b>Strategy-Pattern</b>. Modul 02 zeigt dir dieses und weitere Muster im Detail — OCP ist die Motivation, Strategy ist eines der Werkzeuge dafür.</div>
+      </div>
+
+      <p class="cloze__text">Lückentext — ergänze die fehlenden Begriffe:</p>
+      <div class="cloze">
+        <p class="cloze__text">Das Single Responsibility Principle verlangt: eine Klasse darf nur einen einzigen <input class="cloze__blank" data-answer="Änderungsgrund|Grund|Aenderungsgrund" size="16"> haben. Das Open/Closed Principle verlangt: Code soll offen für <input class="cloze__blank" data-answer="Erweiterung|Erweiterungen" size="12"> sein, aber geschlossen für <input class="cloze__blank" data-answer="Änderung|Änderungen|Aenderung|Aenderungen" size="12">. Die klassische Lösung dafür ist, eine <input class="cloze__blank" data-answer="switch|switch-Anweisung|switch-anweisung" size="10">-Verzweigung durch <input class="cloze__blank" data-answer="Polymorphismus|polymorphismus" size="14"> zu ersetzen.</p>
+        <div class="cloze__actions">
+          <button class="cloze__check">Prüfen</button>
+          <button class="quiz__reset" type="button">Zurücksetzen</button>
+        </div>
+        <div class="quiz__feedback"></div>
+      </div>
+    </section>
+
+    <!-- ══════════ KAPITEL 3 · L ══════════ -->
+    <section class="chapter" id="k3">
+      <span class="chapter__tag">Kapitel 3 · Liskov Substitution</span>
+      <div class="principle-row">
+        <span class="principle-letter">L</span>
+        <span class="principle-name"><b>Liskov Substitution Principle:</b> Ein Subtyp muss sich überall dort einsetzen lassen, wo sein Basistyp erwartet wird — ohne das Verhalten zu brechen.</span>
+      </div>
+      <h2>Vererbung ist ein Vertrag, keine Formalität</h2>
+      <p>Das klassische Beispiel: <code class="inline">Pinguin</code> erbt von <code class="inline">Vogel</code>, weil ein Pinguin biologisch ein Vogel ist. <code class="inline">Vogel</code> hat eine Methode <code class="inline">fliegen()</code> — die jede Unterklasse automatisch mit erbt. Ein Pinguin kann aber nicht fliegen.</p>
+
+      <div class="code-cols">
+        <div class="code-block code-block--before">
+          <div class="code-block__label">Vorher — der Vertrag bricht</div>
+          <pre><code>class Vogel {
+    String fliegen() {
+        return "fliegt.";
+    }
+}
+class Pinguin extends Vogel {
+    @Override
+    String fliegen() {
+        throw new UnsupportedOperationException(
+            "Pinguine koennen nicht fliegen!");
+    }
+}
+
+// Irgendwo im Code:
+for (Vogel v : alleVoegel) {
+    System.out.println(v.fliegen()); // kracht bei Pinguin</code></pre>
+        </div>
+        <div class="code-block code-block--after">
+          <div class="code-block__label">Nachher — der Vertrag passt zur Realität</div>
+          <pre><code>abstract class Vogel { /* gemeinsame Basis */ }
+
+interface Flugfaehig {
+    String fliegen();
+}
+
+class Sperling extends Vogel implements Flugfaehig {
+    public String fliegen() { return "fliegt."; }
+}
+
+class Pinguin extends Vogel {
+    // hat gar keine fliegen()-Methode mehr,
+    // dafuer z.B. schwimmen()
+}</code></pre>
+        </div>
+      </div>
+
+      <p>Was konkret bricht, wenn man den „Vorher"-Code verwendet: Jede Methode, die eine <code class="inline">Vogel</code>-Referenz entgegennimmt und <code class="inline">fliegen()</code> aufruft, verlässt sich auf den Vertrag „gibt einen String zurück". Ein <code class="inline">Pinguin</code>-Objekt bricht diesen Vertrag zur Laufzeit mit einer Exception — der aufrufende Code konnte das nicht wissen, weil er nur mit dem Basistyp <code class="inline">Vogel</code> gearbeitet hat. Im „Nachher" gibt es diese Methode bei <code class="inline">Pinguin</code> gar nicht erst: Ein Aufruf wäre ein <b>Kompilierfehler</b>, kein Laufzeitfehler.</p>
+
+      <div class="callout callout--warn">
+        <div class="callout__icon">🚩</div>
+        <div class="callout__body">Das gleiche Muster tritt bei <code class="inline">Quadrat extends Rechteck</code> auf: Wenn <code class="inline">setBreite()</code> bei einem Quadrat automatisch auch die Höhe mitändert, bricht das die Erwartung „Breite und Höhe sind unabhängig", die jeder Code hat, der nur mit <code class="inline">Rechteck</code> arbeitet.</div>
+      </div>
+
+      <div class="quiz" data-quiz-type="mc">
+        <p class="quiz__question">Eine Klasse <code class="inline">Rechteck</code> hat unabhängige Methoden <code class="inline">setBreite(int b)</code> und <code class="inline">setHoehe(int h)</code>. Eine Unterklasse <code class="inline">Quadrat</code> überschreibt beide so, dass sie immer <b>beide</b> Seiten gleichzeitig setzen. Welche Aussagen treffen zu? <span class="quiz__hint">(mehrere richtig)</span></p>
+        <ul class="quiz__options">
+          <li class="quiz__option" data-correct>Ein Test, der nach setBreite(5) erwartet, dass getHoehe() unverändert bleibt, schlägt für ein Quadrat-Objekt fehl, obwohl er für Rechteck bestand.</li>
+          <li class="quiz__option" data-correct>Code, der mit einer Rechteck-Referenz arbeitet, kann durch ein Quadrat-Objekt anderes Verhalten bekommen als erwartet — das verletzt LSP.</li>
+          <li class="quiz__option">Das Problem lässt sich vollständig lösen, indem man die Klasse Quadrat als private deklariert.</li>
+          <li class="quiz__option">Da ein Quadrat mathematisch ein Spezialfall eines Rechtecks ist, ist die Vererbung hier immer korrekt modelliert.</li>
+        </ul>
+        <button class="quiz__check">Prüfen</button>
+        <button class="quiz__reset" type="button">Zurücksetzen</button>
+        <div class="quiz__feedback"></div>
+      </div>
+    </section>
+
+    <!-- ══════════ KAPITEL 4 · I ══════════ -->
+    <section class="chapter" id="k4">
+      <span class="chapter__tag">Kapitel 4 · Interface Segregation</span>
+      <div class="principle-row">
+        <span class="principle-letter">I</span>
+        <span class="principle-name"><b>Interface Segregation Principle:</b> Kleine, passgenaue Interfaces statt eines fetten „God-Interface".</span>
+      </div>
+      <h2>Niemand sollte implementieren müssen, was er nicht braucht</h2>
+      <p>Ein Interface <code class="inline">Drucker</code> mit <code class="inline">print()</code>, <code class="inline">scan()</code> und <code class="inline">fax()</code> passt gut zu einem teuren Multifunktionsgerät. Ein einfacher Tintenstrahldrucker kann aber nur drucken.</p>
+
+      <div class="code-cols">
+        <div class="code-block code-block--before">
+          <div class="code-block__label">Vorher — ein fettes Interface</div>
+          <pre><code>interface Drucker {
+    String drucken(String dok);
+    String scannen(String dok);
+    String faxen(String dok, String nr);
+}
+
+class Tintenstrahldrucker implements Drucker {
+    public String drucken(String dok) {
+        return "Gedruckt: " + dok;
+    }
+    public String scannen(String dok) {
+        throw new UnsupportedOperationException();
+    }
+    public String faxen(String dok, String nr) {
+        throw new UnsupportedOperationException();
+    }
+}</code></pre>
+        </div>
+        <div class="code-block code-block--after">
+          <div class="code-block__label">Nachher — passgenaue Interfaces</div>
+          <pre><code>interface Druckbar { String drucken(String dok); }
+interface Scanbar  { String scannen(String dok); }
+interface Faxbar   { String faxen(String dok, String nr); }
+
+class Tintenstrahldrucker implements Druckbar {
+    public String drucken(String dok) {
+        return "Gedruckt: " + dok;
+    }
+    // keine scannen()/faxen()-Attrappe mehr noetig
+}
+
+class Multifunktionsdrucker
+        implements Druckbar, Scanbar, Faxbar { ... }</code></pre>
+        </div>
+      </div>
+
+      <p>Der „Vorher"-Zustand zwingt jede einfache Implementierung, zwei Methoden vorzutäuschen, die sie gar nicht anbieten kann — mit leeren Rümpfen oder, schlimmer, mit Exceptions, die erst zur Laufzeit auffliegen. Jeder Aufrufer, der nur eine <code class="inline">Drucker</code>-Referenz sieht, kann nicht erkennen, welche Methoden tatsächlich sicher aufrufbar sind.</p>
+
+      <div class="quiz" data-quiz-type="sc">
+        <p class="quiz__question">Ein neues Interface <code class="inline">Zahlungsmethode</code> verlangt <code class="inline">bezahlen()</code>, <code class="inline">stornieren()</code> und <code class="inline">ratenplanErstellen()</code>. Eine Klasse <code class="inline">Barzahlung</code> implementiert <code class="inline">bezahlen()</code> sinnvoll, aber <code class="inline">stornieren()</code> und <code class="inline">ratenplanErstellen()</code> werfen beide eine Exception. Was ist laut ISP der bessere Weg?</p>
+        <ul class="quiz__options">
+          <li class="quiz__option" data-correct>Das Interface in kleinere Interfaces aufteilen, z. B. Bezahlbar, Stornierbar, Ratenfaehig, sodass Barzahlung nur implementiert, was tatsächlich passt.</li>
+          <li class="quiz__option">Die Exceptions durch leere, gut kommentierte Methodenrümpfe ersetzen, damit wenigstens kein Laufzeitfehler mehr auftritt.</li>
+          <li class="quiz__option">Eine abstrakte Basisklasse einführen, die stornieren() und ratenplanErstellen() bereits mit Standardverhalten vorgibt.</li>
+          <li class="quiz__option">Barzahlung so lassen wie sie ist, da nur ein kleiner Teil der Anwendung diese Methoden überhaupt aufruft.</li>
+        </ul>
+        <button class="quiz__check">Prüfen</button>
+        <button class="quiz__reset" type="button">Zurücksetzen</button>
+        <div class="quiz__feedback"></div>
+      </div>
+    </section>
+
+    <!-- ══════════ KAPITEL 5 · D ══════════ -->
+    <section class="chapter" id="k5">
+      <span class="chapter__tag">Kapitel 5 · Dependency Inversion</span>
+      <div class="principle-row">
+        <span class="principle-letter">D</span>
+        <span class="principle-name"><b>Dependency Inversion Principle:</b> High-Level-Module hängen von Abstraktionen ab, nicht von konkreten Low-Level-Klassen.</span>
+      </div>
+      <h2>Wer hängt von wem ab?</h2>
+      <p>„High-Level" ist hier die Geschäftslogik (z. B. „einen Kunden benachrichtigen"), „Low-Level" ist die konkrete Technik (z. B. „eine E-Mail über SMTP verschicken"). Wenn die High-Level-Klasse eine Low-Level-Klasse direkt mit <code class="inline">new</code> erzeugt, hängt die wichtige Geschäftslogik von einem austauschbaren Implementierungsdetail ab — nicht umgekehrt, wie man erwarten würde.</p>
+
+      <div class="viz">
+        <div class="viz__title">Vorher/Nachher: wer hängt von wem ab</div>
+        <canvas id="dipChart" height="400"></canvas>
+        <p class="viz__cap">Im „Vorher" kennt die High-Level-Klasse die konkrete Low-Level-Klasse beim Namen (durchgezogener Pfeil, rot = eng gekoppelt). Im „Nachher" hängen High-Level-Klasse <i>und</i> beide Low-Level-Klassen von derselben Abstraktion ab (grün = entkoppelt) — die gestrichelten Pfeile stehen für „implementiert das Interface".</p>
+      </div>
+
+      <div class="code-cols">
+        <div class="code-block code-block--before">
+          <div class="code-block__label">Vorher — direkte Abhängigkeit</div>
+          <pre><code>class Benachrichtigungsdienst {
+    private EmailVersender versender
+        = new EmailVersender();
+
+    String benachrichtige(String empf, String txt) {
+        return versender.senden(empf, txt);
+    }
+}
+// SMS statt E-Mail? -&gt; diese Klasse aendern.</code></pre>
+        </div>
+        <div class="code-block code-block--after">
+          <div class="code-block__label">Nachher — Abhängigkeit von der Abstraktion</div>
+          <pre><code>interface Nachrichtenversender {
+    String senden(String empf, String txt);
+}
+
+class Benachrichtigungsdienst {
+    private final Nachrichtenversender versender;
+
+    Benachrichtigungsdienst(Nachrichtenversender v) {
+        this.versender = v; // von aussen uebergeben
+    }
+    String benachrichtige(String empf, String txt) {
+        return versender.senden(empf, txt);
+    }
+}</code></pre>
+        </div>
+      </div>
+
+      <p>Diese Technik — die Abhängigkeit von außen über den Konstruktor hineinzureichen, statt sie selbst zu erzeugen — heißt <span class="keyword">Dependency Injection</span>. Sie ist die gängigste Methode, DIP in der Praxis umzusetzen, aber DIP selbst ist das Prinzip (wovon hängt der Code ab), Dependency Injection nur eine Technik dafür.</p>
+
+      <div class="callout callout--think">
+        <div class="callout__icon">💡</div>
+        <div class="callout__body"><b>Aha:</b> Der Name „Dependency <i>Inversion</i>" kommt daher, dass sich die übliche Abhängigkeitsrichtung umkehrt. Normalerweise würde man sagen: Low-Level-Details bestimmen, was High-Level-Code tun kann. Hier ist es umgekehrt — die Abstraktion gehört zur High-Level-Seite, und die Low-Level-Klassen richten sich nach ihr.</div>
+      </div>
+
+      <p>Zum Abschluss: Ordne jeden Code-Geruch dem Prinzip zu, das er verletzt.</p>
+      <div class="dragdrop">
+        <div class="dragdrop__layout">
+          <div class="dragdrop__pool">
+            <span class="dragdrop__col-label">Code-Geruch</span>
+            <div class="dragdrop__item" data-match="dip">„new KonkreteKlasse()" ist tief im Code an zig Stellen verteilt</div>
+            <div class="dragdrop__item" data-match="srp">Die Klasse hat fünf unabhängige Gründe, sich zu ändern</div>
+            <div class="dragdrop__item" data-match="isp">Eine Klasse muss leere Methoden implementieren, nur weil das Interface sie verlangt</div>
+            <div class="dragdrop__item" data-match="ocp">Bei jeder neuen Rabattart muss eine bestehende Methode geändert werden</div>
+            <div class="dragdrop__item" data-match="lsp">Eine Unterklasse wirft bei einer geerbten Methode plötzlich eine Exception</div>
+          </div>
+          <div class="dragdrop__targets">
+            <span class="dragdrop__col-label">Prinzip</span>
+            <div class="dragdrop__target" data-target="srp"><span class="dragdrop__target-label">Single Responsibility</span><div class="dragdrop__slot"></div></div>
+            <div class="dragdrop__target" data-target="ocp"><span class="dragdrop__target-label">Open/Closed</span><div class="dragdrop__slot"></div></div>
+            <div class="dragdrop__target" data-target="lsp"><span class="dragdrop__target-label">Liskov Substitution</span><div class="dragdrop__slot"></div></div>
+            <div class="dragdrop__target" data-target="isp"><span class="dragdrop__target-label">Interface Segregation</span><div class="dragdrop__slot"></div></div>
+            <div class="dragdrop__target" data-target="dip"><span class="dragdrop__target-label">Dependency Inversion</span><div class="dragdrop__slot"></div></div>
+          </div>
+          <div class="dragdrop__actions">
+            <button class="dragdrop__check">Prüfen</button>
+            <button class="quiz__reset" type="button">Zurücksetzen</button>
+            <div class="quiz__feedback"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════ KAPITEL 6 ══════════ -->
+    <section class="chapter" id="k6">
+      <span class="chapter__tag">Kapitel 6 · Selbstcheck</span>
+      <h2>Bist du fit für Modul 02?</h2>
+      <p>Klick die Karten um. Wenn du diese fünf sicher beantwortest, bist du bereit für die Entwurfsmuster, die viele dieser Prinzipien in wiederverwendbare Lösungsschablonen gießen.</p>
+
+      <div class="cards">
+        <div class="card3d"><div class="card3d__inner">
+          <div class="card3d__face card3d__front"><span class="card3d__tag">S — SRP</span><span class="card3d__q">Wonach richtet sich beim SRP eine „Verantwortlichkeit"?</span><span class="card3d__hint">klick</span></div>
+          <div class="card3d__face card3d__back"><span class="card3d__tag">Antwort</span><span class="card3d__a">Nach dem <i>Änderungsgrund</i>, nicht nach der Anzahl der Methoden — eine Klasse soll nur einen Grund haben, sich zu ändern.</span></div>
+        </div></div>
+        <div class="card3d"><div class="card3d__inner">
+          <div class="card3d__face card3d__front"><span class="card3d__tag">O — OCP</span><span class="card3d__q">Was bedeutet „offen für Erweiterung, geschlossen für Änderung" konkret im Code?</span><span class="card3d__hint">klick</span></div>
+          <div class="card3d__face card3d__back"><span class="card3d__tag">Antwort</span><span class="card3d__a">Neues Verhalten fügst du durch eine neue Klasse hinzu (z. B. eine neue Rabatt-Klasse), ohne bestehenden, funktionierenden Code anzufassen.</span></div>
+        </div></div>
+        <div class="card3d"><div class="card3d__inner">
+          <div class="card3d__face card3d__front"><span class="card3d__tag">L — LSP</span><span class="card3d__q">Woran erkennst du eine LSP-Verletzung im Code?</span><span class="card3d__hint">klick</span></div>
+          <div class="card3d__face card3d__back"><span class="card3d__tag">Antwort</span><span class="card3d__a">Eine Unterklasse ändert das erwartete Verhalten der Basisklasse — z. B. wirft sie plötzlich eine Exception oder verletzt eine Annahme, auf die sich aufrufender Code verlässt.</span></div>
+        </div></div>
+        <div class="card3d"><div class="card3d__inner">
+          <div class="card3d__face card3d__front"><span class="card3d__tag">I — ISP</span><span class="card3d__q">Was ist das Kernproblem eines „fetten" Interfaces?</span><span class="card3d__hint">klick</span></div>
+          <div class="card3d__face card3d__back"><span class="card3d__tag">Antwort</span><span class="card3d__a">Klassen müssen Methoden implementieren, die für sie gar keinen Sinn ergeben — oft mit leeren Rümpfen oder geworfenen Exceptions.</span></div>
+        </div></div>
+        <div class="card3d"><div class="card3d__inner">
+          <div class="card3d__face card3d__front"><span class="card3d__tag">D — DIP</span><span class="card3d__q">Was hängt beim DIP von was ab?</span><span class="card3d__hint">klick</span></div>
+          <div class="card3d__face card3d__back"><span class="card3d__tag">Antwort</span><span class="card3d__a">High-Level- <i>und</i> Low-Level-Module hängen beide von einer Abstraktion ab — nicht das High-Level-Modul direkt vom Low-Level-Modul.</span></div>
+        </div></div>
+      </div>
+
+      <details class="reveal">
+        <summary>Warum ist „eine Klasse, eine Aufgabe" eine ungenaue Umschreibung von SRP?</summary>
+        <div class="q"><p>Weil „Aufgabe" nach Methodenanzahl klingt. SRP zielt auf <b>Änderungsgründe</b>: Eine Klasse mit zehn eng zusammenhängenden Methoden, die alle aus demselben Anlass geändert werden, ist SRP-konform. Eine Klasse mit zwei Methoden, die aus zwei völlig unabhängigen Gründen geändert werden, verletzt SRP.</p></div>
+      </details>
+      <details class="reveal">
+        <summary>Widerspricht OCP nicht der Praxis, dass man Code doch ab und zu ändern muss?</summary>
+        <div class="q"><p>Nein. OCP schließt Bugfixes oder das Ändern von bestehendem, fehlerhaftem Verhalten nicht aus — es geht um den Fall „eine <i>neue Variante</i> kommt dazu" (neue Rabattart, neuer Zahlungsweg). Ziel ist, dass genau <i>dieser</i> Fall keine Kaskade von Änderungen an bereits funktionierendem Code auslöst.</p></div>
+      </details>
+      <details class="reveal">
+        <summary>Ist DIP dasselbe wie Dependency Injection?</summary>
+        <div class="q"><p>Nein, auch wenn beide oft zusammen genannt werden. DIP ist das <b>Prinzip</b>: Code soll von Abstraktionen abhängen, nicht von konkreten Klassen. Dependency Injection ist eine <b>Technik</b>, um das umzusetzen — Abhängigkeiten werden von außen hineingereicht (z. B. über den Konstruktor), statt sie selbst mit <code class="inline">new</code> zu erzeugen.</p></div>
+      </details>
+
+      <div class="callout callout--note" style="margin-top:28px">
+        <div class="callout__icon">🚀</div>
+        <div class="callout__body"><b>Nächster Schritt:</b> Bearbeite die Übung in <code class="inline">code/01-solid/</code> — dort findest du zu jedem Prinzip ein Vorher-Beispiel und eine mit TODOs versehene Aufteilung, die du selbst fertigstellst. Jede <code class="inline">Main.java</code> zeigt dir sofort, ob dein Ergebnis stimmt. Danach geht's weiter mit <a href="02_Design_Patterns_Grundlagen.html">Modul 02 · Design Patterns</a>.</div>
+      </div>
+    </section>
+
+    <footer class="foot">
+      <span>Modul 01 · SOLID-Prinzipien</span>
+      <span><a href="00_Vom_Problem_zum_Plan.html">← Modul 00</a> · <a href="index.html">Übersicht</a> · <a href="02_Design_Patterns_Grundlagen.html">Modul 02 →</a></span>
+    </footer>
+  </main>
+</div>
+
+<script src="../js/quiz.js"></script>
+<script>
+/* ── Modul-Visualisierungen ── */
+(function(){
+  "use strict";
+  var css = function(v){ return getComputedStyle(document.documentElement).getPropertyValue(v).trim() || "#4453c4"; };
+  function fit(cv){
+    var dpr = window.devicePixelRatio || 1;
+    var w = cv.clientWidth || 600, h = cv.clientHeight || 400;
+    if (cv.width !== w*dpr || cv.height !== h*dpr){ cv.width = w*dpr; cv.height = h*dpr; }
+    var ctx = cv.getContext("2d"); ctx.setTransform(dpr,0,0,dpr,0,0);
+    return { ctx: ctx, w: w, h: h };
+  }
+
+  function roundRect(ctx,x,y,w,h,r){
+    ctx.beginPath();
+    ctx.moveTo(x+r,y);
+    ctx.arcTo(x+w,y,x+w,y+h,r);
+    ctx.arcTo(x+w,y+h,x,y+h,r);
+    ctx.arcTo(x,y+h,x,y,r);
+    ctx.arcTo(x,y,x+w,y,r);
+    ctx.closePath();
+  }
+
+  function box(ctx,x,y,w,h,lines,borderColor,fillColor){
+    ctx.fillStyle = fillColor; ctx.strokeStyle = borderColor; ctx.lineWidth = 1.6;
+    roundRect(ctx,x,y,w,h,6); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = css("--ink"); ctx.font = "12px 'JetBrains Mono', monospace"; ctx.textAlign = "center";
+    var cy = y + h/2 - (lines.length-1)*7;
+    lines.forEach(function(line,i){ ctx.fillText(line, x+w/2, cy + i*14 + 4); });
+  }
+
+  function arrow(ctx,x1,y1,x2,y2,color,dashed){
+    ctx.strokeStyle = color; ctx.fillStyle = color; ctx.lineWidth = 2;
+    ctx.setLineDash(dashed ? [5,4] : []);
+    ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+    ctx.setLineDash([]);
+    var angle = Math.atan2(y2-y1, x2-x1), size = 7;
+    ctx.beginPath();
+    ctx.moveTo(x2,y2);
+    ctx.lineTo(x2-size*Math.cos(angle-Math.PI/6), y2-size*Math.sin(angle-Math.PI/6));
+    ctx.lineTo(x2-size*Math.cos(angle+Math.PI/6), y2-size*Math.sin(angle+Math.PI/6));
+    ctx.closePath(); ctx.fill();
+  }
+
+  /* ── DIP: Vorher/Nachher Abhängigkeitsdiagramm ── */
+  var dipCv = document.getElementById("dipChart");
+  function drawDip(){
+    if (!dipCv) return;
+    var o = fit(dipCv), ctx = o.ctx, w = o.w, h = o.h;
+    ctx.clearRect(0,0,w,h);
+    ctx.textAlign = "center";
+
+    var splitY = h * 0.36;
+    ctx.strokeStyle = css("--hair-strong"); ctx.setLineDash([4,4]); ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(10, splitY); ctx.lineTo(w-10, splitY); ctx.stroke();
+    ctx.setLineDash([]);
+
+    var boxW = Math.min(190, w*0.32), boxH = 52;
+    var xA = w*0.20, xB = w*0.80;
+
+    /* Vorher */
+    ctx.font = "700 12px 'JetBrains Mono', monospace";
+    ctx.fillStyle = css("--warn");
+    ctx.fillText("VORHER — eng gekoppelt", w/2, 20);
+
+    var beforeY = 36;
+    box(ctx, xA-boxW/2, beforeY, boxW, boxH, ["Benachrichtigungs-","dienst (High-Level)"], css("--hair-strong"), css("--surface"));
+    box(ctx, xB-boxW/2, beforeY, boxW, boxH, ["EmailVersender","(konkrete Klasse)"], css("--warn"), css("--warn-tint"));
+    ctx.font = "11px 'JetBrains Mono', monospace"; ctx.fillStyle = css("--ink-soft");
+    ctx.fillText("erzeugt: new EmailVersender()", w/2, beforeY+boxH/2-14);
+    arrow(ctx, xA+boxW/2, beforeY+boxH/2, xB-boxW/2-4, beforeY+boxH/2, css("--warn"), false);
+    ctx.font = "11px 'JetBrains Mono', monospace"; ctx.fillStyle = css("--ink-mute");
+    ctx.fillText("High-Level kennt die konkrete Low-Level-Klasse direkt.", w/2, beforeY+boxH+20);
+
+    /* Nachher */
+    ctx.font = "700 12px 'JetBrains Mono', monospace";
+    ctx.fillStyle = css("--good");
+    ctx.fillText("NACHHER — entkoppelt über Abstraktion", w/2, splitY+24);
+
+    var afterTopY = splitY+40;
+    box(ctx, xA-boxW/2, afterTopY, boxW, boxH, ["Benachrichtigungs-","dienst (High-Level)"], css("--hair-strong"), css("--surface"));
+    box(ctx, xB-boxW/2, afterTopY, boxW, boxH, ["«Interface»","Nachrichtenversender"], css("--accent"), css("--accent-tint"));
+    ctx.font = "11px 'JetBrains Mono', monospace"; ctx.fillStyle = css("--ink-soft");
+    ctx.fillText("hängt ab von (Abstraktion)", w/2, afterTopY+boxH/2-14);
+    arrow(ctx, xA+boxW/2, afterTopY+boxH/2, xB-boxW/2-4, afterTopY+boxH/2, css("--good"), false);
+
+    var lowY = afterTopY+boxH+44, lowBoxW = boxW*0.85, lowBoxH = boxH-8;
+    var xE = xB-lowBoxW*0.72, xS = xB+lowBoxW*0.72;
+    box(ctx, xE-lowBoxW/2, lowY, lowBoxW, lowBoxH, ["EmailVersender"], css("--good"), css("--good-tint"));
+    box(ctx, xS-lowBoxW/2, lowY, lowBoxW, lowBoxH, ["SmsVersender"], css("--good"), css("--good-tint"));
+    arrow(ctx, xE, lowY, xB-16, afterTopY+boxH+4, css("--good"), true);
+    arrow(ctx, xS, lowY, xB+16, afterTopY+boxH+4, css("--good"), true);
+
+    ctx.font = "11px 'JetBrains Mono', monospace"; ctx.fillStyle = css("--ink-mute");
+    ctx.fillText("gestrichelt = „implementiert" — beide hängen von derselben Abstraktion ab.", w/2, lowY+lowBoxH+20);
+  }
+
+  function redrawAll(){ drawDip(); }
+  window.addEventListener("resize", redrawAll);
+  window.addEventListener("load", redrawAll);
+  redrawAll();
+})();
+</script>
+</body>
+</html>

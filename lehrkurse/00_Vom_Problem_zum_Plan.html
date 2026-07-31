@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vom Problem zum Plan — Modul 00 · Bootcamp Architektur</title>
+<link rel="stylesheet" href="../css/styles.css">
+<style>
+  /* Modul-spezifische Ergänzungen — nutzen nur Farben aus styles.css/colorpalett.css */
+  .phase-bar { display: flex; align-items: flex-end; gap: 4px; height: 100%; }
+  .moscow-cols { display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; margin-top: 8px; }
+  .moscow-col__label { font-family: var(--mono); font-size: 11px; text-align: center; padding: 6px; border-radius: var(--radius) var(--radius) 0 0; color: #fff; font-weight: 700; }
+  .adr-box { background: var(--surface); border: 1px solid var(--hair); border-left: 3px solid var(--accent); border-radius: var(--radius); padding: 16px 18px; margin: 16px 0; box-shadow: var(--shadow); }
+  .adr-box dt { font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: .1em; color: var(--accent-deep); font-weight: 700; margin-top: 12px; }
+  .adr-box dt:first-child { margin-top: 0; }
+  .adr-box dd { margin: 4px 0 0; }
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <aside class="rail">
+    <div class="brand">
+      <span class="brand__mark">Bootcamp · Architektur</span>
+      <span class="brand__name">Softwarearchitektur & Projektplanung</span>
+      <span class="brand__sub">Vom ersten Anforderungssatz bis zum fertigen Entwurf</span>
+    </div>
+    <div class="note-strip">
+      Lies der Reihe nach. <b>Spiel mit den Grafiken</b> und rechne die Übungen mit — das bleibt hängen, nicht das bloße Lesen.
+    </div>
+    <nav class="nav">
+      <div class="nav__group">Module</div>
+      <a class="nav__task is-active" href="00_Vom_Problem_zum_Plan.html"><span class="nav__num">00</span><span class="nav__label">Vom Problem zum Plan</span></a>
+      <a class="nav__task" href="01_SOLID_Prinzipien.html"><span class="nav__num">01</span><span class="nav__label">SOLID-Prinzipien</span></a>
+      <a class="nav__task" href="02_Design_Patterns_Grundlagen.html"><span class="nav__num">02</span><span class="nav__label">Design Patterns</span></a>
+      <a class="nav__task" href="03_Architekturstile.html"><span class="nav__num">03</span><span class="nav__label">Architekturstile</span></a>
+      <a class="nav__task" href="04_Modularitaet_Kopplung_Kohaesion.html"><span class="nav__num">04</span><span class="nav__label">Modularität & Kopplung</span></a>
+      <a class="nav__task" href="05_Fallstudie_Kleines_System.html"><span class="nav__num">05</span><span class="nav__label">Fallstudie: Kleines System</span></a>
+    </nav>
+    <div class="rail__foot">
+      <a class="nav__task" href="index.html"><span class="nav__num">←</span><span class="nav__label">Zur Übersicht</span></a>
+      <a class="nav__task" href="../Lernpfad.md"><span class="nav__num">📅</span><span class="nav__label">Lernpfad</span></a>
+      <a class="nav__task" href="../code/00-requirements"><span class="nav__num">💻</span><span class="nav__label">Übung: 00-requirements</span></a>
+    </div>
+  </aside>
+
+  <main class="main">
+    <header class="masthead">
+      <div class="masthead__rule"><span><span class="dot"></span>Modul 00 · Fundament</span><span>~35 Min Lesezeit</span></div>
+      <div class="kicker">Projektplanung</div>
+      <h1>Vom Problem <em>zum Plan</em></h1>
+      <p class="lede">Bevor du eine einzige Klasse schreibst, entscheidet sich schon viel: Was soll das System eigentlich können? Was <i>nicht</i>? Und warum diese Technologie und nicht eine andere? Dieses Modul gibt dir das Handwerkszeug für die Phase, die am billigsten ist, um Fehler zu vermeiden — die Planung.</p>
+    </header>
+
+    <!-- ══════════ KAPITEL 0 ══════════ -->
+    <section class="chapter" id="k0">
+      <span class="chapter__tag">Kapitel 0 · Warum planen?</span>
+      <h2>Der teuerste Fehler ist der, der spät auffällt</h2>
+      <p class="lead-in">Ein falsch verstandenes Anforderung, die erst in der Testphase auffällt, kostet ein Vielfaches von dem, was ihre Korrektur in der Planungsphase gekostet hätte. Das ist keine Floskel — es lässt sich zeigen.</p>
+
+      <div class="viz">
+        <div class="viz__title">Kosten einer Änderung, je nachdem wann sie entdeckt wird</div>
+        <canvas id="costChart" height="260"></canvas>
+        <p class="viz__cap">Relative Kosten, eine Anforderung zu korrigieren — abhängig von der Phase, in der der Fehler entdeckt wird. Die Werte sind typische Größenordnungen aus der Software-Engineering-Literatur, keine exakten Messwerte: Die Aussage ist die Größenordnung, nicht die dritte Nachkommastelle.</p>
+      </div>
+
+      <div class="callout callout--think">
+        <div class="callout__icon">💡</div>
+        <div class="callout__body"><b>Aha:</b> Planung ist kein Selbstzweck und keine Bürokratie. Sie ist die billigste Stelle, an der du Fehler noch beheben kannst, bevor sie sich in hunderten Zeilen Code festsetzen.</div>
+      </div>
+    </section>
+
+    <!-- ══════════ KAPITEL 1 ══════════ -->
+    <section class="chapter" id="k1">
+      <span class="chapter__tag">Kapitel 1 · Anforderungen</span>
+      <h2>Funktionale vs. nicht-funktionale Anforderungen</h2>
+      <p>Jede Anforderung an ein System fällt in eine von zwei Kategorien:</p>
+      <ul>
+        <li><b>Funktionale Anforderungen (FA):</b> <span class="keyword">Was</span> das System tun soll. „Nutzer können sich registrieren.“ „Das System berechnet den Gesamtpreis inkl. Steuer.“</li>
+        <li><b>Nicht-funktionale Anforderungen (NFA):</b> <span class="keyword">Wie gut</span> es das tun soll. Performance, Sicherheit, Verfügbarkeit, Wartbarkeit, Skalierbarkeit, Benutzbarkeit.</li>
+      </ul>
+      <div class="callout callout--note">
+        <div class="callout__icon">⚠️</div>
+        <div class="callout__body">Der häufigste Anfängerfehler: Nur FAs aufschreiben und NFAs stillschweigend annehmen. „Das System muss schnell sein“ ist keine Anforderung — <b>„95 % der Anfragen antworten unter 200 ms bei 500 gleichzeitigen Nutzern“</b> ist eine. Ohne Zahl ist eine NFA nicht überprüfbar und wird in der Praxis ignoriert.</div>
+      </div>
+
+      <div class="quiz" data-quiz-type="sc">
+        <p class="quiz__question">„Das Passwort-Reset-Formular muss per E-Mail einen Link verschicken, der 30 Minuten gültig ist.“ — Was ist das?</p>
+        <ul class="quiz__options">
+          <li class="quiz__option" data-correct>Eine funktionale Anforderung (mit einer eingebetteten Zahl, aber sie beschreibt eine Funktion)</li>
+          <li class="quiz__option">Eine nicht-funktionale Anforderung, da eine Zeitangabe (30 Minuten) enthalten ist</li>
+          <li class="quiz__option">Weder noch — das ist eine reine Implementierungsdetail-Vorgabe</li>
+        </ul>
+        <button class="quiz__check">Prüfen</button>
+        <button class="quiz__reset" type="button">Zurücksetzen</button>
+        <div class="quiz__feedback"></div>
+      </div>
+
+      <div class="quiz" data-quiz-type="mc">
+        <p class="quiz__question">Welche der folgenden Sätze sind <b>nicht-funktionale</b> Anforderungen? <span class="quiz__hint">(mehrere richtig)</span></p>
+        <ul class="quiz__options">
+          <li class="quiz__option" data-correct>Das System muss 99,9 % der Zeit im Monat erreichbar sein.</li>
+          <li class="quiz__option">Nutzer können eine Rechnung als PDF herunterladen.</li>
+          <li class="quiz__option" data-correct>Neue Entwickler sollen ein neues Modul ohne Rücksprache in unter einem Tag integrieren können.</li>
+          <li class="quiz__option" data-correct>Passwörter werden gehasht gespeichert, nie im Klartext.</li>
+        </ul>
+        <button class="quiz__check">Prüfen</button>
+        <button class="quiz__reset" type="button">Zurücksetzen</button>
+        <div class="quiz__feedback"></div>
+      </div>
+    </section>
+
+    <!-- ══════════ KAPITEL 2 ══════════ -->
+    <section class="chapter" id="k2">
+      <span class="chapter__tag">Kapitel 2 · User Stories</span>
+      <h2>Anforderungen greifbar machen: User Stories</h2>
+      <p>Eine <span class="keyword">User Story</span> beschreibt eine Anforderung aus Sicht einer Person, die das System nutzt — nicht aus Sicht des Systems. Das Standardformat:</p>
+      <div class="eq center">Als &lt;Rolle&gt; möchte ich &lt;Ziel&gt;, damit &lt;Nutzen&gt;.</div>
+      <p>Der Nutzen-Teil ist keine Kür — er ist der Grund, warum die Story überhaupt existiert. Ohne ihn diskutiert man später über Details, statt über das eigentliche Ziel.</p>
+
+      <h3>Akzeptanzkriterien: wann ist die Story „fertig“?</h3>
+      <p>Zu jeder Story gehören konkrete, überprüfbare Bedingungen. Ein bewährtes Format ist <span class="keyword">Given–When–Then</span>:</p>
+      <div class="eq">Gegeben (Given) ein registrierter Nutzer mit korrektem Passwort,<br>wenn (When) er sich einloggt,<br>dann (Then) landet er auf dem Dashboard und sieht seinen Namen.</div>
+
+      <p class="cloze__text">Lückentext — ergänze die fehlenden Begriffe im Story-Format:</p>
+      <div class="cloze">
+        <p class="cloze__text">„Als <input class="cloze__blank" data-answer="Kundin|Kunde|Kundin oder Kunde" size="10"> möchte ich meine Bestellung stornieren, damit ich nicht für etwas <input class="cloze__blank" data-answer="bezahle|zahle" size="10"> möchte, das ich nicht mehr will.“ Die Akzeptanzkriterien werden im Format <input class="cloze__blank" data-answer="Given-When-Then|Given When Then" size="18"> geschrieben.</p>
+        <div class="cloze__actions">
+          <button class="cloze__check">Prüfen</button>
+          <button class="quiz__reset" type="button">Zurücksetzen</button>
+        </div>
+        <div class="quiz__feedback"></div>
+      </div>
+    </section>
+
+    <!-- ══════════ KAPITEL 3 ══════════ -->
+    <section class="chapter" id="k3">
+      <span class="chapter__tag">Kapitel 3 · Priorisierung</span>
+      <h2>MVP-Scoping: nicht alles gleichzeitig</h2>
+      <p>Ein <span class="keyword">Minimum Viable Product (MVP)</span> ist die kleinste Version eines Systems, die für die Nutzer bereits echten Wert hat. Die <span class="keyword">MoSCoW-Methode</span> hilft, Anforderungen einzusortieren:</p>
+      <ul>
+        <li><b>Must have</b> — ohne das funktioniert das Produkt nicht.</li>
+        <li><b>Should have</b> — wichtig, aber es gibt einen (unschönen) Workaround.</li>
+        <li><b>Could have</b> — nice-to-have, wird zuerst gestrichen, wenn die Zeit knapp wird.</li>
+        <li><b>Won't have (this time)</b> — bewusst außerhalb des Scopes, nicht vergessen, nur verschoben.</li>
+      </ul>
+
+      <div class="callout callout--warn">
+        <div class="callout__icon">🚩</div>
+        <div class="callout__body">Klassischer Fehler: Alles wird „Must have“, weil alles irgendwie wichtig <i>klingt</i>. Test: Wenn <b>mehr als 60 %</b> deiner Anforderungen „Must have“ sind, hast du nicht priorisiert, du hast nur abgeschrieben.</div>
+      </div>
+
+      <p>Ordne die folgenden Anforderungen eines Online-Shop-MVPs den richtigen Kategorien zu:</p>
+      <div class="dragdrop">
+        <div class="dragdrop__layout">
+          <div class="dragdrop__pool">
+            <span class="dragdrop__col-label">Anforderungen</span>
+            <div class="dragdrop__item" data-match="must">Nutzer können Produkte in den Warenkorb legen und bezahlen</div>
+            <div class="dragdrop__item" data-match="must">Zahlungsdaten werden sicher verarbeitet</div>
+            <div class="dragdrop__item" data-match="should">Nutzer erhalten eine Bestellbestätigung per E-Mail</div>
+            <div class="dragdrop__item" data-match="could">Produkte können mit Sternebewertungen versehen werden</div>
+            <div class="dragdrop__item" data-match="could">Es gibt eine Wunschliste</div>
+            <div class="dragdrop__item" data-match="wont">Eine native iOS- und Android-App</div>
+          </div>
+          <div class="dragdrop__targets">
+            <span class="dragdrop__col-label">Kategorie</span>
+            <div class="dragdrop__target" data-target="must"><span class="dragdrop__target-label">Must have</span><div class="dragdrop__slot"></div></div>
+            <div class="dragdrop__target" data-target="should"><span class="dragdrop__target-label">Should have</span><div class="dragdrop__slot"></div></div>
+            <div class="dragdrop__target" data-target="could"><span class="dragdrop__target-label">Could have</span><div class="dragdrop__slot"></div></div>
+            <div class="dragdrop__target" data-target="wont"><span class="dragdrop__target-label">Won't have (this time)</span><div class="dragdrop__slot"></div></div>
+          </div>
+          <div class="dragdrop__actions">
+            <button class="dragdrop__check">Prüfen</button>
+            <button class="quiz__reset" type="button">Zurücksetzen</button>
+            <div class="quiz__feedback"></div>
+          </div>
+        </div>
+      </div>
+      <p class="viz__cap" style="margin-top:-6px">Es gibt hier kein einziges „richtig“ — die hinterlegte Musterlösung folgt der üblichen Priorisierung für einen ersten Zahl-und-Versand-MVP. Wenn deine Begründung für eine andere Einordnung schlüssig ist, ist das kein Fehler, sondern eine Design-Entscheidung — genau darum geht es in diesem Kapitel.</p>
+    </section>
+
+    <!-- ══════════ KAPITEL 4 ══════════ -->
+    <section class="chapter" id="k4">
+      <span class="chapter__tag">Kapitel 4 · Entscheidungen festhalten</span>
+      <h2>Architecture Decision Records (ADR)</h2>
+      <p>Ein <span class="keyword">ADR</span> ist ein kurzes Dokument, das <b>eine</b> Architekturentscheidung festhält: welche Optionen es gab, wofür man sich entschieden hat und warum. Ohne ADRs fragt sich jedes neue Teammitglied (und du selbst, in sechs Monaten): „Warum ist das eigentlich so gebaut?“</p>
+
+      <div class="adr-box">
+        <dl>
+          <dt>Titel</dt><dd>ADR-003: Relationale Datenbank statt dokumentenorientierter DB</dd>
+          <dt>Status</dt><dd>Angenommen</dd>
+          <dt>Kontext</dt><dd>Die Bestelldaten haben feste, stark verknüpfte Strukturen (Kunde ↔ Bestellung ↔ Position ↔ Produkt) und müssen transaktional konsistent sein.</dd>
+          <dt>Entscheidung</dt><dd>Wir verwenden PostgreSQL statt MongoDB.</dd>
+          <dt>Konsequenzen</dt><dd>Positiv: ACID-Transaktionen, ausgereiftes Tooling, das Team kennt SQL bereits. Negativ: Schema-Änderungen brauchen Migrationen; horizontale Skalierung ist aufwändiger als bei dokumentenorientierten DBs.</dd>
+        </dl>
+      </div>
+      <p>Die vier Felder <b>Kontext</b>, <b>Entscheidung</b>, <b>Konsequenzen</b> (positiv <i>und</i> negativ!) sind der Kern jedes ADRs. Das Weglassen der negativen Konsequenzen ist der häufigste Fehler — jede Entscheidung hat einen Preis, und den ehrlich zu benennen ist genau der Punkt eines ADRs.</p>
+
+      <details class="reveal">
+        <summary>Warum reicht "wir haben uns für X entschieden" allein nicht?</summary>
+        <div class="q"><p>Weil ohne den <b>Kontext</b> niemand beurteilen kann, ob die Entscheidung unter geänderten Umständen noch gilt. Ändert sich der Kontext (z. B. neue Skalierungs-Anforderung), weiß man dank ADR sofort, welche Entscheidungen überprüft werden müssen.</p></div>
+      </details>
+    </section>
+
+    <!-- ══════════ KAPITEL 5 ══════════ -->
+    <section class="chapter" id="k5">
+      <span class="chapter__tag">Kapitel 5 · Tech-Stack</span>
+      <h2>Tech-Stack-Entscheidung: Kriterien statt Bauchgefühl</h2>
+      <p>„Ich nehme Framework X, weil ich das schon kenne“ ist manchmal die richtige Entscheidung — aber nur, wenn man sie bewusst gegen andere Kriterien abgewogen hat, nicht weil man nicht daran gedacht hat. Eine <span class="keyword">gewichtete Entscheidungsmatrix</span> macht das Abwägen sichtbar:</p>
+
+      <div class="viz">
+        <div class="viz__title">Entscheidungsmatrix: zwei Stacks für ein internes Tool</div>
+        <canvas id="decisionChart" height="280"></canvas>
+        <div class="viz__ctrl">
+          <span>Gewicht „Time-to-Market“:&nbsp;<span class="viz__read" id="wTTM-out">5</span></span>
+          <input type="range" id="wTTM" min="1" max="10" value="5">
+        </div>
+        <div class="viz__ctrl">
+          <span>Gewicht „Team-Know-how“:&nbsp;<span class="viz__read" id="wTeam-out">5</span></span>
+          <input type="range" id="wTeam" min="1" max="10" value="5">
+        </div>
+        <div class="viz__ctrl">
+          <span>Gewicht „Skalierbarkeit“:&nbsp;<span class="viz__read" id="wScale-out">5</span></span>
+          <input type="range" id="wScale" min="1" max="10" value="5">
+        </div>
+        <p class="viz__cap">Bewegt man die Gewichte, ändert sich, welcher Stack gewinnt. Das ist der Punkt: Es gibt selten eine objektiv „beste“ Wahl — es gibt eine beste Wahl <b>für die Kriterien, die euch wichtig sind</b>. Die Matrix macht diese Kriterien explizit, statt sie im Kopf einer Person zu belassen.</p>
+      </div>
+
+      <div class="quiz" data-quiz-type="sc">
+        <p class="quiz__question">Was ist der eigentliche Wert einer Entscheidungsmatrix beim Tech-Stack — auch wenn am Ende doch die „gefühlte“ Wahl gewinnt?</p>
+        <ul class="quiz__options">
+          <li class="quiz__option" data-correct>Sie zwingt dazu, die Kriterien und ihre Gewichtung explizit zu benennen, statt sie unausgesprochen im Bauchgefühl zu lassen.</li>
+          <li class="quiz__option">Sie liefert eine mathematisch beweisbar richtige Antwort, die man nicht mehr hinterfragen muss.</li>
+          <li class="quiz__option">Sie ersetzt die Notwendigkeit, mit dem Team über die Entscheidung zu sprechen.</li>
+        </ul>
+        <button class="quiz__check">Prüfen</button>
+        <button class="quiz__reset" type="button">Zurücksetzen</button>
+        <div class="quiz__feedback"></div>
+      </div>
+    </section>
+
+    <!-- ══════════ KAPITEL 6 ══════════ -->
+    <section class="chapter" id="k6">
+      <span class="chapter__tag">Kapitel 6 · Selbstcheck</span>
+      <h2>Bist du fit für Modul 01?</h2>
+      <p>Klick die Karten um. Wenn du diese fünf sicher beantwortest, bist du bereit für die Prinzipien, mit denen der eigentliche Code entsteht.</p>
+
+      <div class="cards">
+        <div class="card3d"><div class="card3d__inner">
+          <div class="card3d__face card3d__front"><span class="card3d__tag">FA vs. NFA</span><span class="card3d__q">Was unterscheidet funktionale von nicht-funktionalen Anforderungen?</span><span class="card3d__hint">klick</span></div>
+          <div class="card3d__face card3d__back"><span class="card3d__tag">Antwort</span><span class="card3d__a">FA beschreibt <i>was</i> das System tut, NFA beschreibt <i>wie gut</i> — und muss messbar formuliert sein.</span></div>
+        </div></div>
+        <div class="card3d"><div class="card3d__inner">
+          <div class="card3d__face card3d__front"><span class="card3d__tag">Story-Format</span><span class="card3d__q">Wie ist eine User Story aufgebaut?</span><span class="card3d__hint">klick</span></div>
+          <div class="card3d__face card3d__back"><span class="card3d__tag">Antwort</span><span class="card3d__a">„Als &lt;Rolle&gt; möchte ich &lt;Ziel&gt;, damit &lt;Nutzen&gt;.“ Der Nutzen-Teil erklärt das Warum.</span></div>
+        </div></div>
+        <div class="card3d"><div class="card3d__inner">
+          <div class="card3d__face card3d__front"><span class="card3d__tag">MoSCoW</span><span class="card3d__q">Wofür steht das „W“ in MoSCoW?</span><span class="card3d__hint">klick</span></div>
+          <div class="card3d__face card3d__back"><span class="card3d__tag">Antwort</span><span class="card3d__a">„Won't have (this time)“ — bewusst aus dem Scope genommen, nicht vergessen, nur verschoben.</span></div>
+        </div></div>
+        <div class="card3d"><div class="card3d__inner">
+          <div class="card3d__face card3d__front"><span class="card3d__tag">ADR</span><span class="card3d__q">Welche drei Felder muss ein ADR mindestens enthalten?</span><span class="card3d__hint">klick</span></div>
+          <div class="card3d__face card3d__back"><span class="card3d__tag">Antwort</span><span class="card3d__a">Kontext, Entscheidung, Konsequenzen (positiv <i>und</i> negativ).</span></div>
+        </div></div>
+        <div class="card3d"><div class="card3d__inner">
+          <div class="card3d__face card3d__front"><span class="card3d__tag">Kosten</span><span class="card3d__q">Warum ist ein spät entdeckter Anforderungsfehler so teuer?</span><span class="card3d__hint">klick</span></div>
+          <div class="card3d__face card3d__back"><span class="card3d__tag">Antwort</span><span class="card3d__a">Weil sich der Fehler inzwischen in Design, Code und Tests fortgepflanzt hat — jede dieser Stellen muss mitkorrigiert werden.</span></div>
+        </div></div>
+      </div>
+
+      <div class="callout callout--note" style="margin-top:28px">
+        <div class="callout__icon">🚀</div>
+        <div class="callout__body"><b>Nächster Schritt:</b> Bearbeite die Übung in <code class="inline">code/00-requirements/</code> (schreibe selbst zwei User Stories inkl. Akzeptanzkriterien und ein ADR für eine kleine Entscheidung). Danach geht's weiter mit <a href="01_SOLID_Prinzipien.html">Modul 01 · SOLID-Prinzipien</a>.</div>
+      </div>
+    </section>
+
+    <footer class="foot">
+      <span>Modul 00 · Vom Problem zum Plan</span>
+      <span><a href="index.html">Übersicht</a> · <a href="01_SOLID_Prinzipien.html">Modul 01 →</a></span>
+    </footer>
+  </main>
+</div>
+
+<script src="../js/quiz.js"></script>
+<script>
+/* ── Modul-Visualisierungen ── */
+(function(){
+  "use strict";
+  var css = function(v){ return getComputedStyle(document.documentElement).getPropertyValue(v).trim() || "#4453c4"; };
+  function fit(cv){
+    var dpr = window.devicePixelRatio || 1;
+    var w = cv.clientWidth || 600, h = cv.clientHeight || 260;
+    if (cv.width !== w*dpr || cv.height !== h*dpr){ cv.width = w*dpr; cv.height = h*dpr; }
+    var ctx = cv.getContext("2d"); ctx.setTransform(dpr,0,0,dpr,0,0);
+    return { ctx: ctx, w: w, h: h };
+  }
+
+  /* ── 1) Kosten-der-Änderung Balkendiagramm ── */
+  var costCv = document.getElementById("costChart");
+  var costPhases = ["Planung","Design","Codierung","Test","Produktion"];
+  var costValues = [1, 3, 8, 20, 60];
+  function drawCost(){
+    if (!costCv) return;
+    var o = fit(costCv), ctx=o.ctx, w=o.w, h=o.h, base=h-38, top=22, left=8, right=8;
+    ctx.clearRect(0,0,w,h);
+    var n = costPhases.length, gap = 18, bw = (w-left-right-gap*(n-1))/n;
+    var maxV = Math.max.apply(null, costValues);
+    ctx.font = "12px 'JetBrains Mono', monospace"; ctx.textAlign = "center";
+    for (var i=0;i<n;i++){
+      var x = left + i*(bw+gap);
+      var bh = costValues[i]/maxV*(base-top);
+      ctx.fillStyle = css("--accent");
+      ctx.fillRect(x, base-bh, bw, bh);
+      ctx.fillStyle = css("--ink");
+      ctx.fillText("×"+costValues[i], x+bw/2, base-bh-8);
+      ctx.fillStyle = css("--ink-mute");
+      ctx.fillText(costPhases[i], x+bw/2, base+18);
+    }
+    ctx.strokeStyle = css("--hair-strong"); ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(left,base); ctx.lineTo(w-right,base); ctx.stroke();
+  }
+
+  /* ── 2) Entscheidungsmatrix Tech-Stack ── */
+  var decCv = document.getElementById("decisionChart");
+  var wTTM = document.getElementById("wTTM"), wTeam = document.getElementById("wTeam"), wScale = document.getElementById("wScale");
+  var wTTMOut = document.getElementById("wTTM-out"), wTeamOut = document.getElementById("wTeam-out"), wScaleOut = document.getElementById("wScale-out");
+  /* Rohbewertungen 1-10 je Kriterium, unabhängig von der Gewichtung */
+  var stacks = [
+    { name: "Stack A (bekannt, monolithisch)", ttm: 9, team: 9, scale: 4 },
+    { name: "Stack B (neu, cloud-nativ)",       ttm: 4, team: 3, scale: 9 }
+  ];
+  function drawDecision(){
+    if (!decCv) return;
+    var o = fit(decCv), ctx=o.ctx, w=o.w, h=o.h, base=h-30, top=20, left=10, right=10;
+    ctx.clearRect(0,0,w,h);
+    var wt = +wTTM.value, wte = +wTeam.value, ws = +wScale.value;
+    wTTMOut.textContent = wt; wTeamOut.textContent = wte; wScaleOut.textContent = ws;
+    var maxScore = (wt+wte+ws)*10;
+    var scores = stacks.map(function(s){ return s.ttm*wt + s.team*wte + s.scale*ws; });
+    var n = stacks.length, gap = 60, bw = (w-left-right-gap*(n-1))/n;
+    var winner = scores[0] >= scores[1] ? 0 : 1;
+    ctx.font = "12px 'JetBrains Mono', monospace"; ctx.textAlign = "center";
+    for (var i=0;i<n;i++){
+      var x = left + i*(bw+gap);
+      var bh = scores[i]/maxScore*(base-top);
+      ctx.fillStyle = i===winner ? css("--good") : css("--hair-strong");
+      ctx.fillRect(x, base-bh, bw, bh);
+      ctx.fillStyle = css("--ink");
+      ctx.fillText(Math.round(scores[i])+" Punkte", x+bw/2, base-bh-10);
+      ctx.fillStyle = css("--ink-soft");
+      wrapText(ctx, stacks[i].name, x+bw/2, base+18, bw+gap*0.8, 14);
+    }
+    ctx.strokeStyle = css("--hair-strong"); ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(left,base); ctx.lineTo(w-right,base); ctx.stroke();
+  }
+  function wrapText(ctx, text, x, y, maxWidth, lineHeight){
+    var words = text.split(" "), line = "", lines = [];
+    for (var i=0;i<words.length;i++){
+      var test = line + words[i] + " ";
+      if (ctx.measureText(test).width > maxWidth && line !== ""){ lines.push(line); line = words[i] + " "; }
+      else line = test;
+    }
+    lines.push(line);
+    for (var j=0;j<lines.length;j++) ctx.fillText(lines[j].trim(), x, y + j*lineHeight);
+  }
+  [wTTM, wTeam, wScale].forEach(function(el){ if (el) el.addEventListener("input", drawDecision); });
+
+  function redrawAll(){ drawCost(); drawDecision(); }
+  window.addEventListener("resize", redrawAll);
+  window.addEventListener("load", redrawAll);
+  redrawAll();
+})();
+</script>
+</body>
+</html>

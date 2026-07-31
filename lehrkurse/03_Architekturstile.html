@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Architekturstile — Modul 03 · Bootcamp Architektur</title>
+<link rel="stylesheet" href="../css/styles.css">
+<style>
+  /* Modul-spezifische Ergänzungen — nutzen nur Farben aus styles.css/colorpalett.css */
+  .layer-cv-wrap { position: relative; }
+  .layer-info { min-height: 3.2em; font-size: 14px; color: var(--ink-soft); background: var(--surface-2); border-radius: var(--radius); padding: 10px 14px; margin-top: 12px; }
+  .layer-info b { color: var(--accent-deep); }
+  .viz-legend { display: flex; gap: 18px; flex-wrap: wrap; margin-bottom: 12px; font-family: var(--mono); font-size: 12px; color: var(--ink-soft); }
+  .viz-legend__item { display: flex; align-items: center; gap: 7px; }
+  .viz-legend__swatch { width: 12px; height: 12px; border-radius: 3px; flex-shrink: 0; }
+  .hex-diagram { display: flex; flex-direction: column; align-items: center; gap: 0; margin: 18px 0; }
+  .hex-ring { border: 2px dashed var(--hair-strong); border-radius: 50%; width: 260px; height: 260px; display: grid; place-items: center; position: relative; }
+  .hex-core { background: var(--accent); color: #fff; border-radius: 50%; width: 120px; height: 120px; display: grid; place-items: center; text-align: center; font-weight: 700; font-size: 13px; padding: 8px; box-shadow: var(--shadow); }
+  .hex-port { position: absolute; background: var(--surface); border: 1.5px solid var(--accent); color: var(--accent-deep); font-family: var(--mono); font-size: 10.5px; font-weight: 700; border-radius: var(--radius); padding: 3px 7px; }
+  .hex-port--left { left: -18px; top: 50%; transform: translateY(-50%); }
+  .hex-port--right { right: -18px; top: 50%; transform: translateY(-50%); }
+  .hex-adapter { font-family: var(--mono); font-size: 11.5px; color: var(--ink-mute); text-align: center; max-width: 130px; }
+  .hex-row { display: flex; align-items: center; gap: 10px; margin-top: -20px; }
+  .hex-row--top { margin-top: 0; margin-bottom: -20px; }
+  .mvc-table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 14px; }
+  .mvc-table th, .mvc-table td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--hair); }
+  .mvc-table th { font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--ink-mute); }
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <aside class="rail">
+    <div class="brand">
+      <span class="brand__mark">Bootcamp · Architektur</span>
+      <span class="brand__name">Softwarearchitektur & Projektplanung</span>
+      <span class="brand__sub">Vom ersten Anforderungssatz bis zum fertigen Entwurf</span>
+    </div>
+    <div class="note-strip">
+      Lies der Reihe nach. <b>Spiel mit den Grafiken</b> und rechne die Übungen mit — das bleibt hängen, nicht das bloße Lesen.
+    </div>
+    <nav class="nav">
+      <div class="nav__group">Module</div>
+      <a class="nav__task" href="00_Vom_Problem_zum_Plan.html"><span class="nav__num">00</span><span class="nav__label">Vom Problem zum Plan</span></a>
+      <a class="nav__task" href="01_SOLID_Prinzipien.html"><span class="nav__num">01</span><span class="nav__label">SOLID-Prinzipien</span></a>
+      <a class="nav__task" href="02_Design_Patterns_Grundlagen.html"><span class="nav__num">02</span><span class="nav__label">Design Patterns</span></a>
+      <a class="nav__task is-active" href="03_Architekturstile.html"><span class="nav__num">03</span><span class="nav__label">Architekturstile</span></a>
+      <a class="nav__task" href="04_Modularitaet_Kopplung_Kohaesion.html"><span class="nav__num">04</span><span class="nav__label">Modularität & Kopplung</span></a>
+      <a class="nav__task" href="05_Fallstudie_Kleines_System.html"><span class="nav__num">05</span><span class="nav__label">Fallstudie: Kleines System</span></a>
+    </nav>
+    <div class="rail__foot">
+      <a class="nav__task" href="index.html"><span class="nav__num">←</span><span class="nav__label">Zur Übersicht</span></a>
+      <a class="nav__task" href="../Lernpfad.md"><span class="nav__num">📅</span><span class="nav__label">Lernpfad</span></a>
+      <a class="nav__task" href="../code/03-architecture"><span class="nav__num">💻</span><span class="nav__label">Übung: 03-architecture</span></a>
+    </div>
+  </aside>
+
+  <main class="main">
+    <header class="masthead">
+      <div class="masthead__rule"><span><span class="dot"></span>Modul 03 · Architektur</span><span>~40 Min Lesezeit</span></div>
+      <div class="kicker">Architekturstile</div>
+      <h1>Wie ganze Systeme <em>zueinander stehen</em></h1>
+      <p class="lede">SOLID (Modul 01) macht einzelne Klassen wartbar. Design Patterns (Modul 02) lösen wiederkehrende Probleme zwischen wenigen Klassen. Aber wie ordnest du <i>Hunderte</i> von Klassen zu einem System, in dem sich niemand verläuft? Dafür gibt es Architekturstile — bewährte Grundrisse für das große Ganze.</p>
+    </header>
+
+    <!-- ══════════ KAPITEL 0 ══════════ -->
+    <section class="chapter" id="k0">
+      <span class="chapter__tag">Kapitel 0 · Einstieg</span>
+      <h2>Warum reichen Prinzipien und Patterns allein nicht?</h2>
+      <p class="lead-in">SOLID sagt dir, wie <i>eine</i> Klasse verantwortungsvoll geschnitten sein sollte. Ein Design Pattern sagt dir, wie <i>ein paar</i> Klassen zusammenspielen, um ein wiederkehrendes Problem zu lösen. Aber keines von beiden beantwortet die Frage: Wo lebt die Datenbank-Anbindung? Darf die Oberfläche direkt SQL ausführen? Wie viele "Dienste" hat mein System, und dürfen sie sich alle gegenseitig kennen?</p>
+      <p>Genau diese Fragen beantwortet ein <span class="keyword">Architekturstil</span>: eine bewährte, wiederholbare Art, die <i>großen</i> Teile eines Systems anzuordnen — und feste Regeln dafür, wer von wem abhängen darf. Ohne einen bewusst gewählten Stil entsteht kein System ohne Struktur — es entsteht ein System mit einer <i>zufälligen</i> Struktur, die niemand entworfen hat und die sich mit jeder Deadline weiter verhärtet.</p>
+
+      <div class="callout callout--think">
+        <div class="callout__icon">💡</div>
+        <div class="callout__body"><b>Analogie:</b> SOLID ist die Qualität der einzelnen Ziegelsteine. Ein Design Pattern ist, wie ein paar Steine zu einem Bogen oder einer Ecke zusammengefügt werden. Ein Architekturstil ist der <b>Grundriss des ganzen Gebäudes</b> — wo die Wände stehen, wo die Treppen sind, welcher Raum welchen anderen Raum betreten darf.</div>
+      </div>
+
+      <p>Dieses Modul behandelt vier Stile, die dir in der Praxis am häufigsten begegnen: <span class="keyword">Schichtenarchitektur</span>, <span class="keyword">MVC</span>, <span class="keyword">Clean/Hexagonal Architecture</span> und die Entscheidung <span class="keyword">Monolith vs. Microservices</span>. Sie schließen sich nicht gegenseitig aus — die meisten realen Systeme kombinieren mehrere davon.</p>
+    </section>
+
+    <!-- ══════════ KAPITEL 1 ══════════ -->
+    <section class="chapter" id="k1">
+      <span class="chapter__tag">Kapitel 1 · Schichtenarchitektur</span>
+      <h2>Schichtenarchitektur (Layered Architecture)</h2>
+      <p>Die Schichtenarchitektur teilt ein System in horizontale Schichten, von denen jede eine klar abgegrenzte Verantwortung trägt:</p>
+      <ul>
+        <li><b>Presentation</b> — nimmt Eingaben entgegen (HTTP-Request, Konsoleneingabe, UI-Klick) und formatiert die Ausgabe. Weiß nichts über fachliche Regeln.</li>
+        <li><b>Domain</b> — die eigentliche Geschäftslogik: Berechnungen, Validierungsregeln, Entscheidungen. Weiß nichts über Konsolen, HTTP oder SQL.</li>
+        <li><b>Data</b> — Persistenz: Daten lesen und schreiben, z. B. in einer Datenbank. Weiß nichts über Geschäftsregeln.</li>
+      </ul>
+      <p>Die zentrale Regel: <span class="keyword">jede Schicht spricht nur mit der direkt darunterliegenden</span>. Presentation ruft Domain auf, Domain ruft Data auf — aber Presentation ruft niemals direkt Data auf, und keine Schicht ruft "nach oben".</p>
+
+      <div class="viz">
+        <div class="viz__title">Interaktiv: Klick auf eine Schicht</div>
+        <div class="layer-cv-wrap">
+          <canvas id="layerCanvas" height="260"></canvas>
+        </div>
+        <div class="layer-info" id="layerInfo">Klicke auf eine der drei Schichten oben, um ihre Verantwortung zu sehen.</div>
+        <p class="viz__cap">Die Pfeile zeigen die einzig erlaubte Aufrufrichtung: von oben nach unten, immer nur eine Ebene weit. Ein Pfeil von Data zu Presentation, oder ein Sprung von Presentation direkt zu Data, wäre ein Bruch der Schichtenregel.</p>
+      </div>
+
+      <div class="callout callout--note">
+        <div class="callout__icon">⚠️</div>
+        <div class="callout__body">Der häufigste Anfängerfehler: SQL-Statements oder Datenbank-Zugriffscode direkt in einer Controller- oder UI-Klasse. Das mag kurzfristig schneller wirken, koppelt aber Presentation und Data fest aneinander — ein Wechsel der UI-Technologie oder der Datenbank zieht dann Änderungen quer durchs ganze System nach sich.</div>
+      </div>
+
+      <div class="quiz" data-quiz-type="sc">
+        <p class="quiz__question">Warum darf die Data-Schicht keine Methode der Presentation-Schicht aufrufen — selbst wenn es technisch möglich wäre?</p>
+        <ul class="quiz__options">
+          <li class="quiz__option" data-correct>Weil sie sonst wüsste, wie Eingaben dargestellt werden — das würde sie an die Oberfläche koppeln.</li>
+          <li class="quiz__option">Weil Java Rückwärtsaufrufe zwischen Paketen aus rein syntaktischen Gründen technisch generell verbietet.</li>
+          <li class="quiz__option">Weil das ausschließlich eine Frage der Laufzeit-Performance ist und mit Kopplung nichts zu tun hat.</li>
+        </ul>
+        <button class="quiz__check">Prüfen</button>
+        <button class="quiz__reset" type="button">Zurücksetzen</button>
+        <div class="quiz__feedback"></div>
+      </div>
+
+      <h3>Übung: Verantwortungen den Schichten zuordnen</h3>
+      <p>Ordne die folgenden typischen Tätigkeiten der richtigen Schicht zu:</p>
+      <div class="dragdrop">
+        <div class="dragdrop__layout">
+          <div class="dragdrop__pool">
+            <span class="dragdrop__col-label">Tätigkeit</span>
+            <div class="dragdrop__item" data-match="presentation">HTTP-Request entgegennehmen</div>
+            <div class="dragdrop__item" data-match="presentation">Eingabe validieren und Antwort formatieren</div>
+            <div class="dragdrop__item" data-match="domain">Rabattregeln berechnen</div>
+            <div class="dragdrop__item" data-match="data">SQL-Query ausführen</div>
+          </div>
+          <div class="dragdrop__targets">
+            <span class="dragdrop__col-label">Schicht</span>
+            <div class="dragdrop__target" data-target="presentation"><span class="dragdrop__target-label">Presentation</span><div class="dragdrop__slot"></div></div>
+            <div class="dragdrop__target" data-target="domain"><span class="dragdrop__target-label">Domain</span><div class="dragdrop__slot"></div></div>
+            <div class="dragdrop__target" data-target="data"><span class="dragdrop__target-label">Data</span><div class="dragdrop__slot"></div></div>
+          </div>
+          <div class="dragdrop__actions">
+            <button class="dragdrop__check">Prüfen</button>
+            <button class="quiz__reset" type="button">Zurücksetzen</button>
+            <div class="quiz__feedback"></div>
+          </div>
+        </div>
+      </div>
+      <p class="viz__cap" style="margin-top:-6px">"Eingabe validieren und Antwort formatieren" meint hier die <i>syntaktische</i> Prüfung (z. B. "ist das Feld überhaupt ausgefüllt?") und das Aufbereiten der Ausgabe — nicht die fachliche Regel selbst. Diese Unterscheidung übst du auch im Java-Projekt <code class="inline">code/03-architecture</code>.</p>
+    </section>
+
+    <!-- ══════════ KAPITEL 2 ══════════ -->
+    <section class="chapter" id="k2">
+      <span class="chapter__tag">Kapitel 2 · MVC</span>
+      <h2>MVC (Model-View-Controller)</h2>
+      <p>MVC trennt drei Verantwortlichkeiten innerhalb der <i>Darstellung</i> eines Systems:</p>
+      <table class="mvc-table">
+        <tr><th>Teil</th><th>Verantwortung</th></tr>
+        <tr><td><b>Model</b></td><td>Daten und Zustand — z. B. ein Objekt, das eine Bestellung repräsentiert</td></tr>
+        <tr><td><b>View</b></td><td>Darstellung des Models — z. B. eine HTML-Seite oder ein Konsolen-Ausdruck</td></tr>
+        <tr><td><b>Controller</b></td><td>Nimmt Eingaben entgegen, entscheidet, welches Model angesprochen und welche View gerendert wird</td></tr>
+      </table>
+
+      <h3>MVC ist kein Ersatz für eine Systemarchitektur</h3>
+      <p>Das ist die Nuance, die häufig übersehen wird: <span class="keyword">MVC ist in erster Linie ein Struktur-Pattern für die Presentation-Schicht</span>, keine vollständige Architektur für das gesamte System. Ein "Model" in einem MVC-Framework ist oft nur ein schlanker Platzhalter, der seinerseits an eine echte Domain-Schicht und eine Data-Schicht delegiert — in einer kleinen Anwendung mögen Model und Domain-Objekt zufällig zusammenfallen, in einer größeren nicht.</p>
+      <p>Mit anderen Worten: MVC beantwortet die Frage "wie strukturiere ich die Oberfläche eines Systems?" — Schichtenarchitektur (oder Hexagonal Architecture, Kapitel 3) beantwortet die größere Frage "wie strukturiere ich das ganze System, inklusive dem, was hinter der Oberfläche passiert?". Beide zusammen zu benutzen ist der Normalfall, nicht der Sonderfall.</p>
+
+      <div class="callout callout--think">
+        <div class="callout__icon">💡</div>
+        <div class="callout__body"><b>Aha:</b> Der Controller in MVC übernimmt oft, was in der Schichtenarchitektur die Presentation-Schicht macht. Das "Model" in MVC ist aber nicht automatisch die vollständige Domain-Schicht — sondern oft nur die Sicht der Presentation-Schicht auf Daten, die eigentlich aus Domain und Data darunter kommen.</div>
+      </div>
+
+      <div class="quiz" data-quiz-type="mc">
+        <p class="quiz__question">Welche der folgenden Aussagen zu MVC sind richtig? <span class="quiz__hint">(mehrere richtig)</span></p>
+        <ul class="quiz__options">
+          <li class="quiz__option" data-correct>MVC ist meist nur ein Struktur-Pattern für die Presentation-Schicht, keine ganze Architektur.</li>
+          <li class="quiz__option" data-correct>Der Controller nimmt Eingaben entgegen und entscheidet, welches Model angesprochen wird.</li>
+          <li class="quiz__option">Das Model in MVC ersetzt vollständig die Notwendigkeit einer eigenen Datenzugriffsschicht.</li>
+          <li class="quiz__option">MVC und Schichtenarchitektur schließen sich architektonisch gegenseitig aus und dürfen nie kombiniert werden.</li>
+        </ul>
+        <button class="quiz__check">Prüfen</button>
+        <button class="quiz__reset" type="button">Zurücksetzen</button>
+        <div class="quiz__feedback"></div>
+      </div>
+    </section>
+
+    <!-- ══════════ KAPITEL 3 ══════════ -->
+    <section class="chapter" id="k3">
+      <span class="chapter__tag">Kapitel 3 · Clean / Hexagonal Architecture</span>
+      <h2>Ports & Adapters: der Kern hängt von nichts Technischem ab</h2>
+      <p>Clean Architecture und Hexagonal Architecture (auch "Ports & Adapters" genannt) verfolgen dieselbe Grundidee: Der <span class="keyword">fachliche Kern</span> eines Systems — die Domain-Logik — darf <b>keine</b> Abhängigkeit zu irgendetwas Technischem haben. Kein Framework, keine konkrete Datenbank, keine Benutzeroberfläche. Der Kern kennt nur seine eigenen fachlichen Konzepte.</p>
+
+      <div class="hex-diagram">
+        <div class="hex-row hex-row--top">
+          <span class="hex-adapter">Web-Controller<br>(REST-Adapter)</span>
+        </div>
+        <div class="hex-ring">
+          <span class="hex-port hex-port--left">Port</span>
+          <div class="hex-core">Fachlicher<br>Kern<br>(Domain)</div>
+          <span class="hex-port hex-port--right">Port</span>
+        </div>
+        <div class="hex-row">
+          <span class="hex-adapter">Datenbank-Adapter<br>(z. B. InMemory- oder SQL-Repository)</span>
+        </div>
+      </div>
+      <p class="viz__cap" style="text-align:center; margin-top:0">Der Kern definiert Ports (Interfaces) für das, was er braucht oder anbietet. Außen angeschlossen sind Adapter — austauschbare, technische Umsetzungen dieser Ports.</p>
+
+      <p>Ein <span class="keyword">Port</span> ist ein Interface, das der Kern selbst definiert — er beschreibt, <i>was</i> er von der Außenwelt braucht (z. B. "irgendetwas, das Aufgaben speichern und wiederfinden kann"), ohne festzulegen, <i>wie</i>. Ein <span class="keyword">Adapter</span> ist die konkrete technische Umsetzung dieses Ports — z. B. eine Datenbank-Anbindung, ein In-Memory-Speicher für Tests, oder ein REST-Controller, der Web-Anfragen in Aufrufe an den Kern übersetzt.</p>
+
+      <h3>Die Dependency Rule</h3>
+      <p>Die <span class="keyword">Dependency Rule</span> besagt: Abhängigkeiten (im Sinne von "kennt den Typ", nicht "wird zur Laufzeit aufgerufen") zeigen immer <b>nach innen</b>, zum Kern hin. Äußere, technische Schichten dürfen den Kern kennen — der Kern darf keine äußere, technische Schicht kennen. Selbst wenn der Kern zur Laufzeit einen Datenbankzugriff auslöst, hängt sein Quellcode nur vom <i>Port</i> (Interface) ab, nicht von der konkreten Datenbank-Klasse.</p>
+
+      <div class="callout callout--note">
+        <div class="callout__icon">🔗</div>
+        <div class="callout__body"><b>Verbindung zu Modul 01:</b> Das ist exakt das <b>Dependency Inversion Principle</b> aus Modul 01, angewendet auf die Architekturebene eines ganzen Systems statt auf zwei einzelne Klassen. Dort hieß es: Hochrangige Module sollen nicht von niedrigrangigen abhängen, beide sollen von Abstraktionen abhängen. Hier heißt dasselbe Prinzip "Ports & Adapters": Der Kern (hochrangig, fachlich wichtig) hängt nur vom Port (der Abstraktion) ab — die Adapter (niedrigrangig, austauschbare Technik) hängen vom Kern ab, nicht umgekehrt. Sieh dir dazu bei Bedarf noch einmal das Kapitel "Dependency Inversion" in <a href="01_SOLID_Prinzipien.html">Modul 01</a> an.</div>
+      </div>
+
+      <p>Im Java-Projekt <code class="inline">code/03-architecture</code> siehst du das konkret: <code class="inline">TodoRepository</code> ist der Port (ein Interface, das die Domain-Schicht selbst definiert), <code class="inline">InMemoryTodoRepository</code> ist der Adapter (die konkrete, austauschbare Implementierung).</p>
+
+      <p class="cloze__text">Lückentext — ergänze die fehlenden Fachbegriffe:</p>
+      <div class="cloze">
+        <p class="cloze__text">Ein Interface, das der fachliche Kern selbst definiert und das von außen implementiert wird, heißt <input class="cloze__blank" data-answer="Port" size="8">. Die konkrete technische Umsetzung dahinter — z. B. eine Datenbank-Anbindung oder ein REST-Controller — heißt <input class="cloze__blank" data-answer="Adapter" size="10">. Die Regel, dass Abhängigkeiten im Quellcode immer nach innen, zum Kern hin zeigen, nennt man die <input class="cloze__blank" data-answer="Dependency Rule|Dependency-Rule" size="16">. Im Gegensatz zur <input class="cloze__blank" data-answer="Layered|Schichten|Schichtenarchitektur" size="14">-Architektur, bei der jede Schicht nur die direkt darunterliegende kennen darf, kennt bei Hexagonal Architecture keine äußere, technische Schicht den Kern konkret — nur über Ports.</p>
+        <div class="cloze__actions">
+          <button class="cloze__check">Prüfen</button>
+          <button class="quiz__reset" type="button">Zurücksetzen</button>
+        </div>
+        <div class="quiz__feedback"></div>
+      </div>
+    </section>
+
+    <!-- ══════════ KAPITEL 4 ══════════ -->
+    <section class="chapter" id="k4">
+      <span class="chapter__tag">Kapitel 4 · Monolith vs. Microservices</span>
+      <h2>Monolith vs. Microservices: wann lohnt sich was?</h2>
+      <p>Ein <span class="keyword">Monolith</span> ist ein System, das als eine einzige Einheit gebaut, getestet und deployt wird — intern kann er trotzdem sauber in Schichten und Module gegliedert sein (siehe Kapitel 1 und Modul 04). <span class="keyword">Microservices</span> teilen ein System in mehrere unabhängig deploybare Dienste auf, die über das Netzwerk miteinander reden und typischerweise jeweils eine eigene Datenhaltung besitzen.</p>
+
+      <div class="viz">
+        <div class="viz__title">Orientierungshilfe: Monolith vs. Microservices über vier Dimensionen</div>
+        <div class="viz-legend">
+          <span class="viz-legend__item"><span class="viz-legend__swatch" style="background:var(--accent)"></span>Monolith</span>
+          <span class="viz-legend__item"><span class="viz-legend__swatch" style="background:var(--warn)"></span>Microservices</span>
+        </div>
+        <canvas id="archCompareChart" height="280"></canvas>
+        <p class="viz__cap">Die Werte sind <b>illustrative relative Größenordnungen</b> auf einer 1–10-Skala, keine exakten Messwerte — die Aussage ist die Richtung und der Abstand, nicht die dritte Nachkommastelle. Wichtig: Ein hoher Wert ist nicht automatisch "besser" — bei "Time-to-first-Deploy" und "Operative Komplexität" ist ein <i>niedriger</i> Wert erstrebenswert (schneller live, weniger Komplexität), bei "Unabhängige Skalierbarkeit" ein <i>hoher</i>.</p>
+      </div>
+
+      <p>Der Reihe nach: Ein Monolith lässt sich schneller zum ersten Mal deployen (eine Anwendung, ein Deployment), ist operativ einfacher (kein Netzwerk zwischen den Teilen, keine verteilten Transaktionen), und braucht kein großes Team, um betrieben zu werden. Microservices gewinnen fast ausschließlich bei <b>unabhängiger Skalierbarkeit</b> — wenn wirklich nur ein Teil des Systems unter extremer Last steht und die anderen Teile davon unberührt bleiben sollen.</p>
+
+      <div class="callout callout--warn">
+        <div class="callout__icon">🚩</div>
+        <div class="callout__body"><b>Der Trugschluss:</b> Microservices lösen in erster Linie ein <b>Organisationsproblem</b> — viele Teams, die unabhängig voneinander deployen wollen, ohne sich gegenseitig zu blockieren. Sie sind <b>keine</b> Lösung für schlechte Code-Qualität. Ein unsauber geschnittener Monolith wird durch die Aufteilung in Microservices nicht automatisch besser — er wird meist zu einem "Distributed Monolith": denselben engen Kopplungen wie vorher, nur jetzt zusätzlich über ein langsames, störanfälliges Netzwerk verteilt (dazu mehr in Modul 04 zu Kopplung).</div>
+      </div>
+
+      <p>Für die meisten kleinen und mittleren Projekte — und ganz besonders, wenn du gerade erst lernst, sauber zu strukturieren — ist ein <b>gut geschnittener Monolith</b> fast immer die richtige Startwahl. Er lässt sich bei Bedarf später gezielt entlang bestehender Modulgrenzen in Services aufteilen (siehe Modul 04). Umgekehrt ist es sehr schwer, einen von Anfang an schlecht geschnittenen verteilten Satz von Microservices nachträglich wieder einzufangen.</p>
+
+      <div class="quiz" data-quiz-type="sc">
+        <p class="quiz__question">Ein dreiköpfiges Studierendenteam baut im Rahmen eines Projekts eine Vereins-Verwaltungssoftware für einen einzigen Verein. Welche Architekturentscheidung ist der sinnvollere Start?</p>
+        <ul class="quiz__options">
+          <li class="quiz__option" data-correct>Ein sauber geschichteter Monolith, aus dem sich bei Bedarf später gezielt Teile herauslösen lassen.</li>
+          <li class="quiz__option">Von Anfang an ein eigener Microservice pro Teammitglied, damit jede und jeder unabhängig arbeiten kann.</li>
+          <li class="quiz__option">Von Anfang an ein eigener Microservice pro Datenbanktabelle, um maximale Flexibilität zu garantieren.</li>
+        </ul>
+        <button class="quiz__check">Prüfen</button>
+        <button class="quiz__reset" type="button">Zurücksetzen</button>
+        <div class="quiz__feedback"></div>
+      </div>
+    </section>
+
+    <!-- ══════════ KAPITEL 5 ══════════ -->
+    <section class="chapter" id="k5">
+      <span class="chapter__tag">Kapitel 5 · Selbstcheck</span>
+      <h2>Bist du fit für Modul 04?</h2>
+      <p>Klick die Karten um. Wenn du diese sicher beantwortest, bist du bereit dafür, tiefer in Modularität, Kopplung und Kohäsion einzusteigen.</p>
+
+      <div class="cards">
+        <div class="card3d"><div class="card3d__inner">
+          <div class="card3d__face card3d__front"><span class="card3d__tag">Schichtenregel</span><span class="card3d__q">Mit welcher Schicht darf eine Schicht in der Schichtenarchitektur sprechen?</span><span class="card3d__hint">klick</span></div>
+          <div class="card3d__face card3d__back"><span class="card3d__tag">Antwort</span><span class="card3d__a">Nur mit der direkt darunterliegenden Schicht — nie mit einer übersprungenen oder darüberliegenden.</span></div>
+        </div></div>
+        <div class="card3d"><div class="card3d__inner">
+          <div class="card3d__face card3d__front"><span class="card3d__tag">MVC-Nuance</span><span class="card3d__q">Ist MVC eine vollständige Systemarchitektur?</span><span class="card3d__hint">klick</span></div>
+          <div class="card3d__face card3d__back"><span class="card3d__tag">Antwort</span><span class="card3d__a">Nein — MVC ist meist ein Struktur-Pattern für die Presentation-Schicht, kein Ersatz für Domain- und Data-Schicht darunter.</span></div>
+        </div></div>
+        <div class="card3d"><div class="card3d__inner">
+          <div class="card3d__face card3d__front"><span class="card3d__tag">Port vs. Adapter</span><span class="card3d__q">Was ist der Unterschied zwischen einem Port und einem Adapter?</span><span class="card3d__hint">klick</span></div>
+          <div class="card3d__face card3d__back"><span class="card3d__tag">Antwort</span><span class="card3d__a">Der Port ist das Interface, das der Kern selbst definiert. Der Adapter ist die konkrete technische Implementierung dieses Interfaces.</span></div>
+        </div></div>
+        <div class="card3d"><div class="card3d__inner">
+          <div class="card3d__face card3d__front"><span class="card3d__tag">Dependency Rule</span><span class="card3d__q">In welche Richtung zeigen Abhängigkeiten in Hexagonal Architecture?</span><span class="card3d__hint">klick</span></div>
+          <div class="card3d__face card3d__back"><span class="card3d__tag">Antwort</span><span class="card3d__a">Immer nach innen, zum fachlichen Kern hin — nie hängt der Kern von einer äußeren, technischen Schicht ab.</span></div>
+        </div></div>
+        <div class="card3d"><div class="card3d__inner">
+          <div class="card3d__face card3d__front"><span class="card3d__tag">Monolith zuerst</span><span class="card3d__q">Warum ist ein Monolith für die meisten kleinen/mittleren Projekte die bessere Startwahl?</span><span class="card3d__hint">klick</span></div>
+          <div class="card3d__face card3d__back"><span class="card3d__tag">Antwort</span><span class="card3d__a">Weil Microservices vor allem ein Organisationsproblem (viele unabhängige Teams) lösen, nicht ein Code-Qualitäts-Problem — und ein Monolith operativ deutlich einfacher ist.</span></div>
+        </div></div>
+        <div class="card3d"><div class="card3d__inner">
+          <div class="card3d__face card3d__front"><span class="card3d__tag">DIP auf Architekturebene</span><span class="card3d__q">Wie hängt die Dependency Rule mit dem Dependency Inversion Principle aus Modul 01 zusammen?</span><span class="card3d__hint">klick</span></div>
+          <div class="card3d__face card3d__back"><span class="card3d__tag">Antwort</span><span class="card3d__a">Sie sind dasselbe Prinzip auf zwei Ebenen: DIP sagt "hänge von Abstraktionen ab, nicht von Konkretem" für Klassen — die Dependency Rule wendet das auf ganze Architekturschichten an.</span></div>
+        </div></div>
+      </div>
+
+      <details class="reveal">
+        <summary>Warum ist "MVC" allein keine Antwort auf die Frage "wie ist mein System architektonisch aufgebaut"?</summary>
+        <div class="q"><p>Weil MVC nichts darüber aussagt, wie die Geschäftslogik strukturiert ist, ob es überhaupt eine eigene Data-Schicht gibt oder wie diese vom Rest entkoppelt ist. MVC beantwortet nur, wie die Presentation-Schicht intern organisiert ist — für alles darunter braucht es zusätzlich einen Stil wie Schichtenarchitektur oder Hexagonal Architecture.</p></div>
+      </details>
+      <details class="reveal">
+        <summary>Ein Kollege sagt: "Wir haben jetzt Microservices, jetzt ist unser Code automatisch sauberer." Was entgegnest du?</summary>
+        <div class="q"><p>Dass Microservices an sich keine Code-Qualität erzeugen. Wenn die Services vorher schon eng gekoppelt waren (z. B. über gemeinsame Datenbanktabellen oder wechselseitige Aufrufe), ist das Ergebnis oft ein "Distributed Monolith" — dieselben Probleme, nur jetzt zusätzlich über ein Netzwerk verteilt und dadurch schwerer zu debuggen.</p></div>
+      </details>
+      <details class="reveal">
+        <summary>Warum reicht es nicht, ein Repository-Interface zu haben, wenn der Service es trotzdem per <code class="inline">new KonkreteKlasse()</code> selbst erzeugt?</summary>
+        <div class="q"><p>Weil damit die Dependency Rule verletzt bleibt: Der Kern kennt zwar ein Interface, aber eben auch direkt die konkrete Implementierung — er ist an sie gebunden. Erst wenn die konkrete Klasse von außen hereingereicht wird (Konstruktor-Injection), hängt der Kern wirklich nur noch von der Abstraktion ab. Genau das übst du in <code class="inline">code/03-architecture</code>.</p></div>
+      </details>
+
+      <div class="callout callout--note" style="margin-top:28px">
+        <div class="callout__icon">🚀</div>
+        <div class="callout__body"><b>Nächster Schritt:</b> Bearbeite die Übung in <code class="inline">code/03-architecture/</code> (löse die Konstruktor-Injection-TODOs in <code class="inline">TodoService</code> und <code class="inline">TodoController</code> und verdrahte alles in <code class="inline">Main</code>). Danach geht's weiter mit <a href="04_Modularitaet_Kopplung_Kohaesion.html">Modul 04 · Modularität & Kopplung</a>.</div>
+      </div>
+    </section>
+
+    <footer class="foot">
+      <span>Modul 03 · Architekturstile</span>
+      <span><a href="02_Design_Patterns_Grundlagen.html">← Modul 02</a> · <a href="index.html">Übersicht</a> · <a href="04_Modularitaet_Kopplung_Kohaesion.html">Modul 04 →</a></span>
+    </footer>
+  </main>
+</div>
+
+<script src="../js/quiz.js"></script>
+<script>
+/* ── Modul-Visualisierungen ── */
+(function(){
+  "use strict";
+  var css = function(v){ return getComputedStyle(document.documentElement).getPropertyValue(v).trim() || "#4453c4"; };
+  function fit(cv){
+    var dpr = window.devicePixelRatio || 1;
+    var w = cv.clientWidth || 600, h = cv.clientHeight || 260;
+    if (cv.width !== w*dpr || cv.height !== h*dpr){ cv.width = w*dpr; cv.height = h*dpr; }
+    var ctx = cv.getContext("2d"); ctx.setTransform(dpr,0,0,dpr,0,0);
+    return { ctx: ctx, w: w, h: h };
+  }
+
+  /* ── 1) Schichten-Diagramm (klickbar) ── */
+  var layerCv = document.getElementById("layerCanvas");
+  var layerInfo = document.getElementById("layerInfo");
+  var layers = [
+    { name: "Presentation", desc: "<b>Presentation:</b> nimmt Eingaben entgegen (HTTP-Request, Konsoleneingabe, Klick) und formatiert die Ausgabe. Prüft nur die Form der Eingabe — keine Geschäftsregeln." },
+    { name: "Domain",       desc: "<b>Domain:</b> die Geschäftslogik — Berechnungen, fachliche Validierungsregeln, Entscheidungen. Kennt weder Konsole/HTTP noch SQL." },
+    { name: "Data",         desc: "<b>Data:</b> liest und schreibt Daten, z. B. in einer Datenbank oder im Arbeitsspeicher. Kennt keine Geschäftsregeln und keine Oberfläche." }
+  ];
+  var selectedLayer = -1;
+  var layerBoxes = []; // { y, h }
+
+  function drawLayers(){
+    if (!layerCv) return;
+    var o = fit(layerCv), ctx=o.ctx, w=o.w, h=o.h;
+    ctx.clearRect(0,0,w,h);
+    var pad = 20, gap = 22, n = layers.length;
+    var boxH = (h - pad*2 - gap*(n-1)) / n;
+    var boxW = w - pad*2;
+    layerBoxes = [];
+    ctx.font = "700 15px 'JetBrains Mono', monospace";
+    ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    for (var i=0;i<n;i++){
+      var y = pad + i*(boxH+gap);
+      layerBoxes.push({ y: y, h: boxH });
+      ctx.fillStyle = i === selectedLayer ? css("--accent") : css("--accent-tint");
+      ctx.fillRect(pad, y, boxW, boxH);
+      ctx.strokeStyle = css("--accent"); ctx.lineWidth = 1.5;
+      ctx.strokeRect(pad, y, boxW, boxH);
+      ctx.fillStyle = i === selectedLayer ? "#ffffff" : css("--accent-deep");
+      ctx.fillText(layers[i].name, w/2, y + boxH/2);
+      /* Pfeil nach unten zur nächsten Schicht */
+      if (i < n-1){
+        var ax = pad + boxW - 26, ay1 = y + boxH, ay2 = y + boxH + gap;
+        ctx.strokeStyle = css("--ink-mute"); ctx.fillStyle = css("--ink-mute"); ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.moveTo(ax, ay1+2); ctx.lineTo(ax, ay2-6); ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(ax, ay2); ctx.lineTo(ax-5, ay2-8); ctx.lineTo(ax+5, ay2-8); ctx.closePath(); ctx.fill();
+      }
+    }
+  }
+
+  if (layerCv){
+    layerCv.addEventListener("click", function(e){
+      var rect = layerCv.getBoundingClientRect();
+      var y = e.clientY - rect.top;
+      for (var i=0;i<layerBoxes.length;i++){
+        if (y >= layerBoxes[i].y && y <= layerBoxes[i].y + layerBoxes[i].h){
+          selectedLayer = i;
+          drawLayers();
+          if (layerInfo) layerInfo.innerHTML = layers[i].desc;
+          break;
+        }
+      }
+    });
+  }
+
+  /* ── 2) Monolith vs. Microservices Vergleichsdiagramm ── */
+  var archCv = document.getElementById("archCompareChart");
+  /* Jede Dimension als [Zeile1, Zeile2] fürs zweizeilige Label unter den Balken */
+  var dims = [["Time-to-first-", "Deploy"], ["Operative", "Komplexität"], ["Nötige", "Teamgröße"], ["Unabh.", "Skalierbarkeit"]];
+  var monolithVals = [2, 3, 2, 3];
+  var microVals    = [7, 8, 6, 9];
+
+  function drawArchCompare(){
+    if (!archCv) return;
+    var o = fit(archCv), ctx=o.ctx, w=o.w, h=o.h, base=h-42, top=26, left=14, right=14;
+    ctx.clearRect(0,0,w,h);
+    var n = dims.length, groupGap = 26;
+    var groupW = (w-left-right-groupGap*(n-1))/n;
+    var barW = groupW/2 - 4;
+    var maxV = 10;
+    ctx.font = "11px 'JetBrains Mono', monospace"; ctx.textAlign = "center";
+    for (var i=0;i<n;i++){
+      var gx = left + i*(groupW+groupGap);
+      var mh = monolithVals[i]/maxV*(base-top);
+      var sh = microVals[i]/maxV*(base-top);
+      /* Monolith-Balken */
+      ctx.fillStyle = css("--accent");
+      ctx.fillRect(gx, base-mh, barW, mh);
+      ctx.fillStyle = css("--ink");
+      ctx.fillText(monolithVals[i]+"/10", gx+barW/2, base-mh-8);
+      /* Microservices-Balken */
+      var gx2 = gx + barW + 8;
+      ctx.fillStyle = css("--warn");
+      ctx.fillRect(gx2, base-sh, barW, sh);
+      ctx.fillStyle = css("--ink");
+      ctx.fillText(microVals[i]+"/10", gx2+barW/2, base-sh-8);
+      /* Dimensionslabel (zweizeilig) */
+      ctx.fillStyle = css("--ink-soft");
+      ctx.fillText(dims[i][0], gx+groupW/2, base+16);
+      ctx.fillText(dims[i][1], gx+groupW/2, base+30);
+    }
+    ctx.strokeStyle = css("--hair-strong"); ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(left,base); ctx.lineTo(w-right,base); ctx.stroke();
+  }
+
+  function redrawAll(){ drawLayers(); drawArchCompare(); }
+  window.addEventListener("resize", redrawAll);
+  window.addEventListener("load", redrawAll);
+  redrawAll();
+})();
+</script>
+</body>
+</html>

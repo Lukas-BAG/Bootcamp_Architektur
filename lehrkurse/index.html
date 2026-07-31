@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bootcamp · Softwarearchitektur & Projektplanung</title>
+<link rel="stylesheet" href="../css/styles.css">
+</head>
+<body>
+<div class="shell">
+
+  <aside class="rail">
+    <div class="brand">
+      <span class="brand__mark">Bootcamp · Architektur</span>
+      <span class="brand__name">Softwarearchitektur & Projektplanung</span>
+      <span class="brand__sub">Vom ersten Anforderungssatz bis zum fertigen Entwurf</span>
+    </div>
+    <div class="note-strip">
+      Lies der Reihe nach. <b>Spiel mit den Grafiken</b> und rechne die Übungen mit — das bleibt hängen, nicht das bloße Lesen.
+    </div>
+    <nav class="nav">
+      <div class="nav__group">Module</div>
+      <a class="nav__task" href="00_Vom_Problem_zum_Plan.html"><span class="nav__num">00</span><span class="nav__label">Vom Problem zum Plan</span></a>
+      <a class="nav__task" href="01_SOLID_Prinzipien.html"><span class="nav__num">01</span><span class="nav__label">SOLID-Prinzipien</span></a>
+      <a class="nav__task" href="02_Design_Patterns_Grundlagen.html"><span class="nav__num">02</span><span class="nav__label">Design Patterns</span></a>
+      <a class="nav__task" href="03_Architekturstile.html"><span class="nav__num">03</span><span class="nav__label">Architekturstile</span></a>
+      <a class="nav__task" href="04_Modularitaet_Kopplung_Kohaesion.html"><span class="nav__num">04</span><span class="nav__label">Modularität & Kopplung</span></a>
+      <a class="nav__task" href="05_Fallstudie_Kleines_System.html"><span class="nav__num">05</span><span class="nav__label">Fallstudie: Kleines System</span></a>
+    </nav>
+    <div class="rail__foot">
+      <a class="nav__task" href="../Lernpfad.md"><span class="nav__num">📅</span><span class="nav__label">Lernpfad</span></a>
+      <a class="nav__task" href="../README.md"><span class="nav__num">📖</span><span class="nav__label">Bootcamp-Guide</span></a>
+      <a class="nav__task" href="../canvas/Mindmap_Architektur.canvas"><span class="nav__num">🗺</span><span class="nav__label">Mindmap (Obsidian)</span></a>
+    </div>
+  </aside>
+
+  <main class="main">
+    <header class="masthead">
+      <div class="masthead__rule"><span><span class="dot"></span>Bootcamp · Selbstlernkurs</span><span>6 Module</span></div>
+      <div class="kicker">Übersicht</div>
+      <h1>Vom Bauplan <em>zum Code</em></h1>
+      <p class="lede">Dieser Bootcamp bringt dir bei, ein Softwareprojekt <b>bevor</b> die erste Zeile Code geschrieben wird sinnvoll zu planen, und wie du Code danach so strukturierst, dass er in einem Jahr noch änderbar ist — mit den Prinzipien, Mustern und Architekturstilen, auf denen professionelle Softwareentwicklung aufbaut. Jedes Modul kombiniert kurze Theorieblöcke mit interaktiven Visualisierungen und Übungen; die Java-Aufgaben dazu liegen in <code class="inline">code/</code> und sind direkt in IntelliJ lauffähig.</p>
+    </header>
+
+    <section class="chapter" id="ueberblick">
+      <span class="chapter__tag">Reihenfolge</span>
+      <h2>Die 6 Module</h2>
+      <p>Die Module bauen aufeinander auf: Modul 0 klärt, <i>was</i> überhaupt gebaut werden soll, bevor Modul 1–4 zeigen, <i>wie</i> man es sauber baut. Modul 5 ist die Fallstudie, die alles zusammenführt. Du kannst trotzdem gezielt einzelne Module ansteuern, wenn du an einem Thema schon fit bist — schau dir dazu vorher kurz die Selbstcheck-Karten am Ende des jeweiligen Moduls an.</p>
+
+      <div class="hub-grid">
+        <a class="hub-card" href="00_Vom_Problem_zum_Plan.html">
+          <span class="hub-card__num">Modul 00</span>
+          <span class="hub-card__title">Vom Problem zum Plan</span>
+          <span class="hub-card__desc">Anforderungen, User Stories, MVP-Scoping, Architecture Decision Records und wie man einen Tech-Stack begründet auswählt.</span>
+        </a>
+        <a class="hub-card" href="01_SOLID_Prinzipien.html">
+          <span class="hub-card__num">Modul 01</span>
+          <span class="hub-card__title">SOLID-Prinzipien</span>
+          <span class="hub-card__desc">Die fünf Grundprinzipien für wartbaren objektorientierten Code — mit Vorher/Nachher-Beispielen statt Merksätzen.</span>
+        </a>
+        <a class="hub-card" href="02_Design_Patterns_Grundlagen.html">
+          <span class="hub-card__num">Modul 02</span>
+          <span class="hub-card__title">Design Patterns</span>
+          <span class="hub-card__desc">Strategy, Factory Method, Observer, Adapter, Decorator und die Fallstricke von Singleton.</span>
+        </a>
+        <a class="hub-card" href="03_Architekturstile.html">
+          <span class="hub-card__num">Modul 03</span>
+          <span class="hub-card__title">Architekturstile</span>
+          <span class="hub-card__desc">Schichtenarchitektur, MVC, Clean/Hexagonal Architecture und wann sich Microservices überhaupt lohnen.</span>
+        </a>
+        <a class="hub-card" href="04_Modularitaet_Kopplung_Kohaesion.html">
+          <span class="hub-card__num">Modul 04</span>
+          <span class="hub-card__title">Modularität, Kopplung & Kohäsion</span>
+          <span class="hub-card__desc">Wie man Module so schneidet, dass Änderungen lokal bleiben — und woran man schlechte Schnitte erkennt.</span>
+        </a>
+        <a class="hub-card" href="05_Fallstudie_Kleines_System.html">
+          <span class="hub-card__num">Modul 05</span>
+          <span class="hub-card__title">Fallstudie: Kleines System</span>
+          <span class="hub-card__desc">Ein kleines System von der Anforderung bis zur Architektur-Entscheidung durchdenken — alles vorherige im Zusammenspiel.</span>
+        </a>
+      </div>
+
+      <div class="callout callout--note">
+        <div class="callout__icon">🗺</div>
+        <div class="callout__body">Öffne <code class="inline">canvas/Mindmap_Architektur.canvas</code> in Obsidian, um alle Themen und ihre Zusammenhänge auf einen Blick zu sehen — inklusive Kennzeichnung, was Kernwissen und was Vertiefung ist.</div>
+      </div>
+    </section>
+
+    <footer class="foot">
+      <span>Bootcamp · Softwarearchitektur & Projektplanung</span>
+      <span><a href="00_Vom_Problem_zum_Plan.html">Los geht's: Modul 00 →</a></span>
+    </footer>
+  </main>
+</div>
+</body>
+</html>
